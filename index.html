@@ -1,0 +1,621 @@
+<!DOCTYPE html>
+<html lang="es-CO" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>FiApp · Prototipo de la sumadora</title>
+<style>
+:root { --fondo: #e9ecf1; --app: #f4f5f8; --texto: #1f2937; --suave: #5b6472; --linea: #dde1e6; --blanco: #ffffff; --primario: #0054e9; --primario-o: #0043bb; --rojo: #c5000f; --verde: #1f7a3d; --verde-b: #2a8a47; --oscuro: #222428; --ambar: #b45309; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --fondo: #15181d; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--fondo); }
+body { font-family: Roboto, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--texto); line-height: 1.4; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+.app { position: relative; max-inline-size: 430px; min-block-size: 100vh; margin-inline: auto; background: var(--app); overflow: hidden; }
+[hidden] { display: none !important; }
+.cab { display: flex; align-items: center; gap: 8px; min-block-size: 56px; padding-inline: 12px; background: var(--oscuro); color: #ffffff; position: sticky; inset-block-start: 0; z-index: 2; }
+.cab .tit { flex: 1 1 auto; font-weight: 700; font-size: 17px; text-align: center; }
+.cab .lado { min-inline-size: 74px; font-size: 15px; color: #ffffff; text-align: start; padding-block: 8px; }
+.cab .lado.fin { text-align: end; }
+.racha { display: inline-flex; align-items: center; gap: 4px; background: #3a3d44; border-radius: 999px; padding-block: 4px; padding-inline: 10px; font-weight: 700; font-size: 14px; }
+.cont { padding: 14px 14px 28px; }
+.tarjeta { background: var(--blanco); border-radius: 16px; padding: 16px; box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06); margin-block-end: 12px; }
+.total-deuda { text-align: center; }
+.total-deuda small { display: block; color: #6b7280; font-weight: 700; letter-spacing: 1px; font-size: 12px; }
+.total-deuda b { display: block; font-size: 32px; font-weight: 800; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 10px; inline-size: 100%; min-block-size: 54px; border-radius: 14px; font-weight: 700; font-size: 17px; padding-inline: 14px; }
+.btn.prim { background: var(--primario); color: #ffffff; }
+.btn.grande { min-block-size: 76px; font-size: 20px; }
+.btn.sec { background: var(--blanco); color: var(--primario-o); border: 2px solid #b9cdfa; }
+.btn.verde { background: var(--verde-b); color: #ffffff; }
+.btn.rojo { background: var(--rojo); color: #ffffff; }
+.btn.gris { background: #e5e7eb; color: #374151; }
+.btn[disabled] { opacity: 0.45; }
+.pila > * + * { margin-block-start: 10px; }
+h2 { font-size: 16px; margin-block: 18px 8px; }
+.cli { display: flex; align-items: center; gap: 12px; inline-size: 100%; text-align: start; background: var(--blanco); border-radius: 12px; padding-block: 12px; padding-inline: 12px; margin-block-end: 8px; }
+.cli b { display: block; font-size: 16px; }
+.cli small { color: #6b7280; }
+.cli .mt { flex: 1 1 auto; min-inline-size: 0; }
+.cli .monto { font-weight: 800; white-space: nowrap; }
+.av { display: inline-flex; align-items: center; justify-content: center; inline-size: 40px; block-size: 40px; border-radius: 50%; background: #e6eefd; color: var(--primario-o); font-weight: 800; font-size: 14px; flex: 0 0 auto; }
+.rojo-t { color: var(--rojo); } .verde-t { color: var(--verde); } .suave { color: var(--suave); }
+.chica { font-size: 13px; }
+.centro { text-align: center; }
+/* sumadora */
+.cinta { background: var(--blanco); border-radius: 14px; min-block-size: 120px; max-block-size: 34vh; overflow-y: auto; padding-block: 6px; padding-inline: 12px; box-shadow: inset 0 0 0 1px var(--linea); }
+.cinta .vacia { color: #9ca3af; text-align: center; padding-block: 44px; }
+.linea { display: flex; align-items: center; gap: 8px; padding-block: 7px; border-block-end: 1px dashed #e5e7eb; font-variant-numeric: tabular-nums; }
+.linea .n { color: #9ca3af; inline-size: 22px; font-size: 13px; }
+.linea .d { flex: 1 1 auto; color: #6b7280; font-size: 14px; }
+.linea .v { font-weight: 700; font-size: 18px; }
+.linea .x { inline-size: 32px; block-size: 32px; border-radius: 50%; color: #9ca3af; font-size: 18px; }
+.pantallita { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-block: 10px 8px; padding-inline: 4px; }
+.pantallita .actual { font-size: 22px; color: var(--primario-o); font-weight: 700; min-block-size: 30px; font-variant-numeric: tabular-nums; }
+.pantallita .tot { text-align: end; }
+.pantallita .tot small { display: block; color: #6b7280; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.pantallita .tot b { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rapidos { display: flex; gap: 8px; overflow-x: auto; padding-block-end: 8px; }
+.rapido { flex: 0 0 auto; background: #fff7e6; color: var(--ambar); border: 1px solid #f5d79e; border-radius: 999px; padding-block: 8px; padding-inline: 14px; font-weight: 700; font-size: 15px; }
+.teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tecla { min-block-size: 58px; border-radius: 12px; background: var(--blanco); font-size: 24px; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.tecla.op { background: #e6eefd; color: var(--primario-o); font-weight: 800; }
+.tecla.mas { grid-row: span 3; background: var(--primario); color: #ffffff; font-size: 30px; }
+.acciones { display: flex; gap: 10px; margin-block-start: 12px; }
+.acciones .btn { flex: 1 1 auto; }
+.acciones .btn.gris { flex: 0 0 34%; }
+/* hojas */
+.velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 10; }
+.hoja { position: fixed; inset-inline: 0; inset-block-end: 0; max-inline-size: 430px; margin-inline: auto; max-block-size: 92vh; overflow-y: auto; background: var(--blanco); border-start-start-radius: 20px; border-start-end-radius: 20px; padding: 16px 16px 22px; z-index: 11; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2); }
+.hoja .agarre { inline-size: 40px; block-size: 5px; border-radius: 3px; background: #d1d5db; margin-inline: auto; margin-block-end: 12px; }
+.hoja h3 { margin-block: 0 4px; font-size: 18px; text-align: center; }
+.hoja .grande { display: block; text-align: center; font-size: 34px; font-weight: 800; margin-block: 4px 12px; font-variant-numeric: tabular-nums; }
+.pago { display: flex; align-items: center; gap: 14px; inline-size: 100%; text-align: start; border: 2px solid var(--linea); border-radius: 14px; padding-block: 14px; padding-inline: 14px; margin-block-end: 10px; font-size: 18px; font-weight: 700; }
+.pago small { display: block; font-size: 13px; font-weight: 400; color: #6b7280; }
+.pago .ico { font-size: 28px; }
+.billetes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-block: 8px 12px; }
+.billete { min-block-size: 50px; border-radius: 12px; background: #eef7f1; color: var(--verde); font-weight: 800; font-size: 17px; border: 1px solid #bfe3cb; }
+.billete.sel { background: var(--verde-b); color: #ffffff; }
+.vueltas { text-align: center; font-size: 18px; margin-block: 6px 12px; }
+.vueltas b { font-size: 24px; }
+.buscar { display: block; inline-size: 100%; font: inherit; font-size: 16px; border: 1px solid var(--linea); border-radius: 12px; padding-block: 12px; padding-inline: 12px; margin-block: 6px 10px; background: #f9fafb; }
+.campo { display: block; margin-block-end: 10px; }
+.campo span { display: block; font-size: 13px; color: #4b5563; margin-block-end: 4px; }
+.campo input { display: block; inline-size: 100%; font: inherit; font-size: 17px; border: 1px solid var(--linea); border-radius: 12px; padding-block: 12px; padding-inline: 12px; }
+.confirmar { text-align: center; }
+.confirmar .tit-hoja { font-weight: 700; color: #374151; }
+.confirmar .av { inline-size: 64px; block-size: 64px; font-size: 22px; margin-block: 12px 6px; }
+.confirmar .nombre { font-size: 26px; font-weight: 800; }
+.confirmar .valor { font-size: 22px; font-weight: 800; color: var(--rojo); margin-block: 4px; }
+.confirmar .detalle { color: #4b5563; margin-block: 2px 14px; }
+.ok { margin-inline: auto; inline-size: 56px; block-size: 56px; border-radius: 50%; background: #e3f4e8; color: var(--verde); font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.burbuja { background: #e7fbd8; border-radius: 12px; padding: 12px; white-space: pre-wrap; font-size: 15px; margin-block: 10px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); font-variant-numeric: tabular-nums; }
+.wa-fondo { background: #efe7de; border-radius: 14px; padding-block: 8px; padding-inline: 10px; }
+.formato { display: flex; gap: 6px; background: #eef0f3; border-radius: 12px; padding: 4px; margin-block: 8px; }
+.formato button { flex: 1 1 0; border-radius: 9px; padding-block: 9px; font-weight: 700; color: #4b5563; }
+.formato button.sel { background: var(--blanco); color: var(--primario-o); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+.aviso { position: fixed; inset-inline: 0; inset-block-start: 14px; max-inline-size: 400px; margin-inline: auto; background: #1f2937; color: #ffffff; border-radius: 12px; padding-block: 12px; padding-inline: 14px; z-index: 30; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); font-weight: 600; }
+.fila-dato { display: flex; justify-content: space-between; gap: 10px; padding-block: 9px; border-block-end: 1px solid #eef0f3; }
+.fila-dato b { font-variant-numeric: tabular-nums; }
+.fila-dato.total { border-block-end: 0; font-size: 18px; }
+.mov { display: flex; justify-content: space-between; gap: 8px; padding-block: 10px; border-block-end: 1px solid #eef0f3; }
+.mov small { display: block; color: #6b7280; font-size: 13px; }
+.mov .vals { color: #6b7280; font-size: 13px; }
+.semana { display: flex; justify-content: space-between; margin-block: 12px; }
+.dia { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; color: #6b7280; }
+.dia i { display: flex; align-items: center; justify-content: center; inline-size: 34px; block-size: 34px; border-radius: 50%; background: #eef0f3; font-style: normal; font-size: 16px; }
+.dia.hecho i { background: #ffedd5; }
+.dia.hoy i { outline: 2px solid #f59e0b; }
+.fuego { font-size: 54px; text-align: center; margin-block: 4px; }
+.horas { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 8px 12px; }
+.hora { border-radius: 999px; border: 1px solid var(--linea); padding-block: 9px; padding-inline: 14px; font-weight: 700; background: var(--blanco); }
+.hora.sel { background: var(--primario); color: #ffffff; border-color: var(--primario); }
+.notif { display: flex; gap: 10px; align-items: flex-start; background: rgba(250, 250, 252, 0.96); border-radius: 18px; padding: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
+.notif .logo { flex: 0 0 auto; inline-size: 38px; block-size: 38px; border-radius: 9px; background: var(--primario); color: #ffffff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.notif b { display: block; font-size: 14px; }
+.notif p { margin: 2px 0 0; font-size: 14px; }
+.bloqueo { background: linear-gradient(160deg, #3b4b6b, #1f2a40); border-radius: 18px; padding: 18px 12px; }
+.bloqueo .reloj { color: #ffffff; text-align: center; font-size: 40px; font-weight: 300; margin-block-end: 12px; }
+.guia h3 { margin-block: 16px 6px; font-size: 16px; }
+.guia li { margin-block-end: 6px; }
+.enlace { color: var(--primario-o); font-weight: 700; text-decoration: underline; padding-block: 8px; }
+.marca { text-align: center; padding-block: 26px 8px; }
+.marca .logo { margin-inline: auto; inline-size: 72px; block-size: 72px; border-radius: 18px; background: var(--primario); color: #ffffff; font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.etiqueta-proto { display: inline-block; background: #fff7e6; color: var(--ambar); border: 1px solid #f5d79e; border-radius: 999px; padding-block: 2px; padding-inline: 10px; font-size: 12px; font-weight: 700; }
+.conversion { margin-block: -4px 12px; font-size: 13px; color: var(--verde); font-weight: 600; min-block-size: 4px; }
+.formato.tipo { margin-block: 0 8px; }
+.linea .etq { display: inline-block; font-size: 12px; background: #fff7e6; color: var(--ambar); border-radius: 6px; padding-inline: 5px; margin-inline-end: 4px; }
+.linea .etq.costo { background: #e3f4e8; color: var(--verde); }
+details.que { margin-block: 2px 8px; font-size: 13px; color: #4b5563; }
+details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointer; }
+.leccion { background: #eef4ff; border: 1px solid #c7d7fb; }
+.leccion .tag { display: inline-block; font-size: 12px; font-weight: 800; color: var(--primario-o); letter-spacing: 0.5px; }
+.leccion b { display: block; font-size: 17px; margin-block: 4px; }
+.leccion p { margin: 0; }
+.desglose { font-size: 13px; color: #6b7280; text-align: end; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<section id="p-bienvenida" data-pantalla>
+  <div class="cont">
+    <div class="marca">
+      <div class="logo">F</div>
+      <h1 style="margin-block: 12px 4px; font-size: 24px;">FiApp</h1>
+      <span class="etiqueta-proto">Prototipo para probar · no guarda datos de verdad</span>
+    </div>
+    <div class="tarjeta">
+      <p style="margin-block: 0 12px;">La <b>sumadora</b>: vende o fía escribiendo los valores, como en la calculadora. Sin cargar productos.</p>
+      <label class="campo"><span>Nombre del negocio (sale en los mensajes de WhatsApp)</span><input id="in-negocio" type="text" autocomplete="off" placeholder="Ej. Panadería Lady"></label>
+      <label class="campo"><span>🛒 Lo que compras para revender: si algo te cuesta $100, ¿en cuánto lo vendes?</span><input id="in-reventa" type="number" inputmode="numeric" min="1" placeholder="Ej. 140"></label>
+      <p class="conversion" id="conv-reventa"></p>
+      <label class="campo"><span>🥖 Lo que produces (pan, tortas, comidas): si los ingredientes te cuestan $100, ¿en cuánto lo vendes? Déjalo vacío si no produces nada.</span><input id="in-produccion" type="number" inputmode="numeric" min="1" placeholder="Ej. 250"></label>
+      <p class="conversion" id="conv-produccion"></p>
+      <button class="btn prim grande" data-a="empezar">Empezar</button>
+    </div>
+    <p class="centro"><button class="enlace" data-a="ir-guia">Guía para la visita (para Diego)</button></p>
+  </div>
+</section>
+
+<section id="p-inicio" data-pantalla hidden>
+  <header class="cab"><span class="lado" id="ini-negocio">Mi Negocio</span><span class="tit">Inicio</span><span class="lado fin"><span class="racha" id="ini-racha">🔥 3</span></span></header>
+  <div class="cont">
+    <div class="tarjeta total-deuda"><small>💰 TOTAL QUE ME DEBEN</small><b id="ini-deuda">$0</b></div>
+    <div class="pila">
+      <button class="btn prim grande" data-a="ir-sumadora">🧮 Sumadora · vender o fiar</button>
+      <button class="btn sec" data-a="ir-cierre">🌙 Cerrar el día</button>
+    </div>
+    <h2>Clientes que me deben</h2>
+    <div id="ini-clientes"></div>
+    <p class="centro chica suave"><button class="enlace" data-a="ir-guia">Guía para la visita</button> · <button class="enlace" data-a="reiniciar">Empezar de nuevo</button></p>
+  </div>
+</section>
+
+<section id="p-sumadora" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Sumadora</span><span class="lado fin"></span></header>
+  <div class="cont">
+    <div class="cinta" id="sum-cinta"></div>
+    <div class="pantallita"><span class="actual" id="sum-actual"></span><span class="tot"><small>TOTAL</small><b id="sum-total">$0</b></span></div>
+    <div class="formato tipo" id="sum-tipo"><button data-tipo="reventa">🛒 Lo que revendo</button><button data-tipo="produccion">🥖 Lo que produzco</button></div>
+    <div class="rapidos" id="sum-rapidos"></div>
+    <div class="teclado">
+      <button class="tecla" data-t="7">7</button><button class="tecla" data-t="8">8</button><button class="tecla" data-t="9">9</button><button class="tecla op" data-t="borrar" aria-label="Borrar">⌫</button>
+      <button class="tecla" data-t="4">4</button><button class="tecla" data-t="5">5</button><button class="tecla" data-t="6">6</button><button class="tecla mas" data-t="mas" aria-label="Agregar">+</button>
+      <button class="tecla" data-t="1">1</button><button class="tecla" data-t="2">2</button><button class="tecla" data-t="3">3</button>
+      <button class="tecla op" data-t="por" aria-label="Por (cantidad)">×</button><button class="tecla" data-t="0">0</button><button class="tecla" data-t="000">000</button>
+    </div>
+    <div class="acciones"><button class="btn gris" data-a="limpiar">Borrar todo</button><button class="btn verde" id="sum-cobrar" data-a="cobrar">Cobrar</button></div>
+  </div>
+</section>
+
+<section id="p-cliente" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit" id="cli-nombre">Cliente</span><span class="lado fin"></span></header>
+  <div class="cont">
+    <div class="tarjeta total-deuda"><small>DEBE</small><b id="cli-saldo" class="rojo-t">$0</b></div>
+    <button class="btn sec" data-a="enviar-cuenta">📒 Enviar su cuenta por WhatsApp</button>
+    <h2>Movimientos</h2>
+    <div class="tarjeta" id="cli-movs"></div>
+  </div>
+</section>
+
+<section id="p-cierre" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Cerrar el día</span><span class="lado fin"></span></header>
+  <div class="cont" id="cierre-cont"></div>
+</section>
+
+<section id="p-guia" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="volver-guia">‹ Volver</button><span class="tit">Guía para la visita</span><span class="lado fin"></span></header>
+  <div class="cont guia">
+    <div class="tarjeta">
+      <b>Cómo usar este prototipo</b>
+      <ol>
+        <li>Escribe el nombre del negocio al empezar: sale en los mensajes.</li>
+        <li>Dale el celular al comerciante y pídele un fiado o una venta de verdad, sin explicarle nada.</li>
+        <li>Mira dónde duda, qué toca primero y qué pregunta. Anótalo tal cual lo dice.</li>
+        <li>Si quiere ver el WhatsApp, deja que lo envíe a su propio número.</li>
+      </ol>
+    </div>
+    <div class="tarjeta">
+      <h3 style="margin-block-start: 0;">Panadería y abarrotes (Lady)</h3>
+      <ul>
+        <li>¿Cuántos valores tiene un fiado normal?</li>
+        <li>¿Prefiere que el WhatsApp lleve la lista de valores o solo el total?</li>
+        <li>¿Qué más anota en el cuaderno borrador, además de los fiados?</li>
+        <li>¿Cada cuánto le llegan pedidos y de qué proveedores? ¿Sus productos tienen código de barras?</li>
+        <li>Cuando dice «le gano el 40%», ¿es que le sube 40% a lo que le cuesta, o que de cada $100 que vende le quedan $40?</li>
+        <li>¿Sabe cuánto paga al mes de arriendo, luz, gas y empleados? ¿Le serviría ver si el negocio gana o pierde en el mes?</li>
+        <li>¿Le sirve la idea del día que sale al cerrar? ¿La entiende sin que se la expliquen?</li>
+        <li>Pídele fotos de 3 a 5 facturas de proveedores.</li>
+      </ul>
+      <h3>Tienda de peces</h3>
+      <ul>
+        <li>En la hora pico, ¿la empleada alcanzaría a usar la sumadora? ¿Qué valores repite más?</li>
+        <li>¿Qué le gustaría ver a la dueña cada noche, y a qué hora?</li>
+        <li>¿Cuántas especies manejan? ¿Cada cuánto se mueren y por qué? ¿El proveedor los repone?</li>
+      </ul>
+      <h3>Para todos</h3>
+      <ul>
+        <li>¿A qué hora tiene un rato tranquilo para cerrar el día?</li>
+        <li>¿Le gustaría que la app le recuerde cerrar el día? ¿Y la racha le motiva o le da igual?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<div class="velo" id="velo" hidden data-a="cerrar-hoja"></div>
+<div class="hoja" id="hoja" hidden role="dialog" aria-modal="true"></div>
+<div class="aviso" id="aviso" hidden></div>
+</div>
+<script>
+/*LOGICA-INICIO*/
+var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+var DIAS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+function num(n) { return Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function pesos(n) { return (Math.round(n) < 0 ? '-' : '') + '$' + num(n); }
+function decimal2(x) { var t = (Math.round(x * 100) / 100).toFixed(2).replace('.', ','); return t.slice(-3) === ',00' ? t.slice(0, -3) : t; }
+function isoDe(d) { var p = function (x) { return String(x).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+function fechaCorta(iso) { var a = iso.split('-').map(Number); return a[2] + ' ' + MESES[a[1] - 1]; }
+function diasAntes(iso, n) { var a = iso.split('-').map(Number); var d = new Date(a[0], a[1] - 1, a[2]); d.setDate(d.getDate() - n); return isoDe(d); }
+function iniciales(nombre) { var p = String(nombre).trim().split(/\s+/).filter(Boolean); if (p.length === 0) { return '?'; } return (p[0].charAt(0) + (p[1] ? p[1].charAt(0) : '')).toUpperCase(); }
+function limpio(nombre) { return String(nombre).trim().replace(/\s+/g, ' '); }
+function saldoDe(cliente) { return cliente.movs.reduce(function (s, m) { return s + (m.t === 'fiado' ? m.total : -m.total); }, 0); }
+function totalCinta(lineas) { return lineas.reduce(function (s, l) { return s + l.cant * l.valor; }, 0); }
+function unidades(lineas) { return lineas.reduce(function (s, l) { return s + l.cant; }, 0); }
+function textoLinea(l) { var p = l.nombre ? l.nombre + ' ' : ''; return l.cant > 1 ? p + l.cant + ' × ' + num(l.valor) + ' = ' + num(l.cant * l.valor) : p + num(l.valor); }
+function lineaSaldo(s) { return s < 0 ? 'Saldo a favor: ' + pesos(-s) : 'Saldo actual: ' + pesos(s); }
+function cuantos(n) { return n === 1 ? '1 producto' : n + ' productos'; }
+/* Margen: el comerciante dice en cuanto vende lo que le cuesta $100; la app lo pasa a "de cada $100 que vendes". */
+function margenDe(precioPor100) { var p = Number(precioPor100); return p > 100 ? (p - 100) / p : 0; }
+function textoMargen(precioPor100) {
+  var p = Number(precioPor100);
+  if (!(p > 0)) { return ''; }
+  if (p <= 100) { return 'Si lo vendes en lo mismo que te cuesta o menos, no te queda ganancia.'; }
+  return 'Ganas ' + pesos(p - 100) + ' por cada $100 de costo. De cada $100 que vendes, te quedan $' + decimal2(100 * margenDe(p)) + ': ese es tu margen.';
+}
+/* Ganancia de una linea: exacta si tiene costo (producto con precio de compra); si no, estimada con el margen de reventa o de produccion. */
+function gananciaLinea(l, margenReventa, margenProduccion) {
+  if (l.costo !== undefined && l.costo !== null) { return { exacta: (l.valor - l.costo) * l.cant, estimada: 0 }; }
+  var m = l.tipo === 'produccion' && margenProduccion !== null ? margenProduccion : margenReventa;
+  return { exacta: 0, estimada: l.valor * l.cant * m };
+}
+function gananciaDe(lineas, mr, mp) { return lineas.reduce(function (s, l) { var g = gananciaLinea(l, mr, mp); return { exacta: s.exacta + g.exacta, estimada: s.estimada + g.estimada }; }, { exacta: 0, estimada: 0 }); }
+function mensajeFiado(negocio, cliente, lineas, iso, saldoNuevo, formato) {
+  var total = totalCinta(lineas);
+  if (formato === 'total') {
+    return '🧾 Fiado del ' + fechaCorta(iso) + ': ' + pesos(total) + ' (' + cuantos(unidades(lineas)) + ')\n' + lineaSaldo(saldoNuevo) + '\n' + limpio(negocio);
+  }
+  return '🧾 Fiado del ' + fechaCorta(iso) + '\nHola ' + limpio(cliente) + ', esto fue lo que llevaste:\n' + lineas.map(textoLinea).join('\n') + '\nTotal: ' + pesos(total) + '\n\n' + lineaSaldo(saldoNuevo) + '\n' + limpio(negocio);
+}
+function mensajeCuenta(negocio, cliente) {
+  var filas = cliente.movs.map(function (m) { return fechaCorta(m.f) + '  ' + (m.t === 'fiado' ? 'Fiado  ' + pesos(m.total) : 'Abono -' + pesos(m.total)); });
+  return '📒 Tu cuenta en ' + limpio(negocio) + '\nHola ' + limpio(cliente.nombre) + ':\n' + filas.join('\n') + '\n\n' + lineaSaldo(saldoDe(cliente));
+}
+function resumenDia(negocio, iso, dia, mr, mp, racha) {
+  var ef = dia.ventas.filter(function (v) { return v.pago === 'efectivo'; });
+  var dg = dia.ventas.filter(function (v) { return v.pago === 'digital'; });
+  var suma = function (l) { return l.reduce(function (s, v) { return s + v.total; }, 0); };
+  var todas = [];
+  dia.ventas.concat(dia.fiados).forEach(function (v) { todas = todas.concat(v.lineas || []); });
+  var g = gananciaDe(todas, mr, mp);
+  var vendido = suma(ef) + suma(dg) + suma(dia.fiados);
+  var exacta = Math.round(g.exacta); var estimada = Math.round(g.estimada); var bruta = Math.round(g.exacta + g.estimada);
+  return {
+    efectivo: suma(ef), nEfectivo: ef.length, digital: suma(dg), nDigital: dg.length, fiados: suma(dia.fiados), nFiados: dia.fiados.length,
+    abonos: suma(dia.abonos), vendido: vendido, exacta: exacta, estimada: estimada, bruta: bruta,
+    texto: '📊 Cierre del día · ' + limpio(negocio) + ' · ' + fechaCorta(iso) + '\n' +
+      'Ventas en efectivo: ' + pesos(suma(ef)) + ' (' + ef.length + ')\n' +
+      'Ventas por Nequi o transferencia: ' + pesos(suma(dg)) + ' (' + dg.length + ')\n' +
+      'Fiados: ' + pesos(suma(dia.fiados)) + ' (' + dia.fiados.length + ')\n' +
+      'Total vendido: ' + pesos(vendido) + '\n' +
+      'Ganancia bruta aproximada (antes de gastos): ' + pesos(bruta) + '\n' +
+      '🔥 ' + racha + (racha === 1 ? ' día' : ' días') + ' seguidos cerrando el día'
+  };
+}
+/* Una idea de finanzas por dia, con los numeros del comerciante cuando los hay. */
+var LECCIONES = 5;
+function leccionDelDia(racha, r) {
+  var i = ((racha + 1) % LECCIONES + LECCIONES) % LECCIONES;
+  var hay = r.vendido > 0;
+  var m = hay ? decimal2(100 * r.bruta / r.vendido) : '';
+  if (i === 0) {
+    return { titulo: 'Tu margen', texto: hay ? 'Hoy vendiste ' + pesos(r.vendido) + ' y te quedaron unos ' + pesos(r.bruta) + ' de ganancia bruta: de cada $100 que vendiste, unos $' + m + '. Ese es tu margen. Mientras más alto, más te queda de cada venta.' : 'Tu margen es lo que te queda de cada $100 que vendes, después de pagar lo que te costó la mercancía.' };
+  }
+  if (i === 1) {
+    return { titulo: 'La plata de la gaveta no es toda ganancia', texto: hay ? 'De los ' + pesos(r.vendido) + ' que vendiste hoy, unos ' + pesos(r.vendido - r.bruta) + ' son para volver a surtir lo que vendiste. La ganancia bruta fue de unos ' + pesos(r.bruta) + '.' : 'De lo que vendes, una parte es para volver a surtir lo que vendiste. Solo el resto es ganancia.' };
+  }
+  if (i === 2) {
+    return { titulo: 'Subirle 40% no es ganar 40%', texto: 'Si algo te cuesta $100 y lo vendes en $140, ganas $40. Pero de cada $100 que vendes te quedan $28,57, porque la cuenta se hace sobre lo que vendes. Por eso la app te pregunta en cuánto vendes lo que te cuesta $100.' };
+  }
+  if (i === 3) {
+    return { titulo: 'Ganancia bruta y utilidad', texto: 'Ganancia bruta es lo que vendes menos lo que te costó lo que vendiste. Utilidad es lo que queda después de pagar arriendo, luz, agua, gas y empleados. Si en el mes los gastos son más que la ganancia bruta, el negocio está perdiendo.' };
+  }
+  return { titulo: 'Tu trabajo también cuenta', texto: 'Si atiendes el negocio todo el día, tu trabajo vale. Si la utilidad del mes no alcanza para pagarte un sueldo, el negocio te está dando un sueldo, no una ganancia.' };
+}
+function semanaRacha(iso, racha) {
+  var a = iso.split('-').map(Number); var hoy = new Date(a[0], a[1] - 1, a[2]); var dow = (hoy.getDay() + 6) % 7;
+  var out = [];
+  for (var i = 0; i < 7; i++) { var d = new Date(hoy); d.setDate(hoy.getDate() - dow + i); var atras = dow - i; out.push({ letra: DIAS[d.getDay()], hecho: atras >= 0 && atras < racha, hoy: atras === 0 }); }
+  return out;
+}
+/*LOGICA-FIN*/
+var CLAVE = 'fiapp-prototipo-sumadora-v2';
+var S = null;
+var temporizador = null;
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function inicial() {
+  var hoy = isoDe(new Date());
+  return {
+    negocio: 'Mi Negocio', precioReventa: '', precioProduccion: '', tipo: 'reventa', pantalla: 'bienvenida', anterior: 'bienvenida', hoy: hoy,
+    racha: 3, cerroHoy: false, hora: '8:00 p. m.', formato: 'lista',
+    cinta: [], actual: '', cant: 0,
+    rapidos: [{ etq: '🥖 Pan', nombre: 'Pan', valor: 300, tipo: 'produccion' }, { etq: '🥤 Gaseosa', nombre: 'Gaseosa', valor: 2500, costo: 2000, tipo: 'reventa' }, { etq: '🥛 Leche', nombre: 'Leche', valor: 4200, costo: 3500, tipo: 'reventa' }, { etq: '', valor: 1000 }, { etq: '', valor: 2000 }, { etq: '', valor: 5000 }],
+    clientes: [
+      { id: 'c1', nombre: 'Marta Gómez', tel: '', movs: [
+        { t: 'fiado', f: diasAntes(hoy, 9), total: 14700, lineas: [{ cant: 1, valor: 3500 }, { cant: 1, valor: 2000 }, { cant: 1, valor: 1200 }, { cant: 1, valor: 8000 }] },
+        { t: 'abono', f: diasAntes(hoy, 6), total: 10000, lineas: [] },
+        { t: 'fiado', f: diasAntes(hoy, 2), total: 21300, lineas: [{ cant: 1, valor: 4500 }, { cant: 2, valor: 3200 }, { cant: 1, valor: 9800 }, { cant: 1, valor: 600 }] }] },
+      { id: 'c2', nombre: 'Jairo Ruiz', tel: '', movs: [
+        { t: 'fiado', f: diasAntes(hoy, 4), total: 18000, lineas: [{ cant: 1, valor: 12000 }, { cant: 6, valor: 1000 }] }] },
+      { id: 'c3', nombre: 'Luz Dary Peña', tel: '', movs: [
+        { t: 'fiado', f: diasAntes(hoy, 12), total: 32400, lineas: [{ cant: 1, valor: 15400 }, { cant: 1, valor: 17000 }] },
+        { t: 'abono', f: diasAntes(hoy, 5), total: 20000, lineas: [] }] },
+      { id: 'c4', nombre: 'Hernando Díaz', tel: '', movs: [] }
+    ],
+    dia: { ventas: [], fiados: [], abonos: [] }, cliSel: null, pendiente: null, ultimo: null
+  };
+}
+function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(S)); } catch (e) { return; } }
+function cargar() {
+  var x = null;
+  try { x = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch (e) { x = null; }
+  if (!x || !x.clientes) { return inicial(); }
+  var hoy = isoDe(new Date());
+  if (x.hoy !== hoy) { x.hoy = hoy; x.dia = { ventas: [], fiados: [], abonos: [] }; x.cerroHoy = false; }
+  return x;
+}
+function aviso(texto) {
+  var a = $('aviso'); a.textContent = texto; a.hidden = false;
+  clearTimeout(temporizador); temporizador = setTimeout(function () { a.hidden = true; }, 2800);
+}
+function mostrar(p) {
+  var secs = document.querySelectorAll('[data-pantalla]');
+  for (var i = 0; i < secs.length; i++) { secs[i].hidden = secs[i].id !== 'p-' + p; }
+  S.pantalla = p; guardar(); window.scrollTo(0, 0);
+  if (p === 'inicio') { renderInicio(); } else if (p === 'sumadora') { renderSumadora(); } else if (p === 'cliente') { renderCliente(); } else if (p === 'cierre') { renderCierre(); } else if (p === 'bienvenida') { renderBienvenida(); }
+}
+function clientePor(id) { for (var i = 0; i < S.clientes.length; i++) { if (S.clientes[i].id === id) { return S.clientes[i]; } } return null; }
+function mr() { return margenDe(S.precioReventa); }
+function mp() { return Number(S.precioProduccion) > 0 ? margenDe(S.precioProduccion) : null; }
+function deudaTotal() { return S.clientes.reduce(function (s, c) { var x = saldoDe(c); return s + (x > 0 ? x : 0); }, 0); }
+function renderConversion() { $('conv-reventa').textContent = textoMargen($('in-reventa').value); $('conv-produccion').textContent = textoMargen($('in-produccion').value); }
+function renderBienvenida() { $('in-negocio').value = S.negocio === 'Mi Negocio' ? '' : S.negocio; $('in-reventa').value = S.precioReventa; $('in-produccion').value = S.precioProduccion; renderConversion(); }
+function renderInicio() {
+  $('ini-negocio').textContent = S.negocio; $('ini-racha').textContent = '🔥 ' + S.racha; $('ini-deuda').textContent = pesos(deudaTotal());
+  var lista = S.clientes.slice().sort(function (a, b) { return saldoDe(b) - saldoDe(a); });
+  $('ini-clientes').innerHTML = lista.map(function (c) {
+    var s = saldoDe(c);
+    return '<button class="cli" data-ver="' + c.id + '"><span class="av">' + esc(iniciales(c.nombre)) + '</span><span class="mt"><b>' + esc(limpio(c.nombre)) + '</b><small>' + (s > 0 ? 'Debe' : s < 0 ? 'A favor' : 'Al día') + '</small></span><span class="monto ' + (s > 0 ? 'rojo-t' : 'verde-t') + '">' + pesos(Math.abs(s)) + '</span></button>';
+  }).join('');
+  var b = document.querySelector('[data-a="ir-cierre"]'); b.textContent = S.cerroHoy ? '✅ Día cerrado · ver resumen' : '🌙 Cerrar el día';
+}
+function pendienteTotal() { var v = parseInt(S.actual || '0', 10); return v > 0 ? (S.cant > 1 ? S.cant : 1) * v : 0; }
+function renderSumadora() {
+  var c = $('sum-cinta');
+  if (S.cinta.length === 0) { c.innerHTML = '<div class="vacia">Escribe un valor y toca +<br>Para varios iguales: 5 × 300 +</div>'; }
+  else {
+    c.innerHTML = S.cinta.map(function (l, i) {
+      var etq = l.nombre ? '<span class="etq' + (l.costo !== undefined && l.costo !== null ? ' costo' : '') + '">' + esc(l.nombre) + '</span>' : (l.tipo === 'produccion' ? '<span class="etq">🥖</span>' : '');
+      return '<div class="linea"><span class="n">' + (i + 1) + '</span><span class="d">' + etq + (l.cant > 1 ? l.cant + ' × ' + num(l.valor) : '') + '</span><span class="v">' + num(l.cant * l.valor) + '</span><button class="x" data-quitar="' + i + '" aria-label="Quitar">✕</button></div>';
+    }).join('');
+    c.scrollTop = c.scrollHeight;
+  }
+  var act = S.actual ? num(parseInt(S.actual, 10)) : '';
+  $('sum-actual').textContent = (S.cant > 1 ? S.cant + ' × ' : '') + act;
+  var total = totalCinta(S.cinta);
+  $('sum-total').textContent = pesos(total);
+  var aCobrar = total + pendienteTotal();
+  var bc = $('sum-cobrar'); bc.disabled = aCobrar === 0; bc.textContent = aCobrar > 0 ? 'Cobrar ' + pesos(aCobrar) : 'Cobrar';
+  var conProd = mp() !== null; if (!conProd) { S.tipo = 'reventa'; }
+  $('sum-tipo').hidden = !conProd;
+  var bt = $('sum-tipo').querySelectorAll('[data-tipo]'); for (var k = 0; k < bt.length; k++) { bt[k].className = bt[k].getAttribute('data-tipo') === S.tipo ? 'sel' : ''; }
+  $('sum-rapidos').innerHTML = S.rapidos.map(function (v, i) { return '<button class="rapido" data-r="' + i + '">' + (v.etq ? v.etq + ' ' : '') + pesos(v.valor) + '</button>'; }).join('');
+}
+function agregarPendiente() {
+  var v = parseInt(S.actual || '0', 10);
+  if (v > 0) { S.cinta.push({ cant: S.cant > 1 ? S.cant : 1, valor: v, tipo: S.tipo, nombre: null, costo: null }); }
+  S.actual = ''; S.cant = 0;
+}
+function tecla(t) {
+  if (/^[0-9]+$/.test(t)) {
+    if (S.actual === '' && /^0+$/.test(t)) { return; }
+    if ((S.actual + t).length > 8) { return; }
+    S.actual += t;
+  } else if (t === 'borrar') {
+    if (S.actual) { S.actual = S.actual.slice(0, -1); } else if (S.cant) { S.actual = String(S.cant); S.cant = 0; } else if (S.cinta.length) { S.cinta.pop(); }
+  } else if (t === 'por') {
+    var q = parseInt(S.actual || '0', 10); if (q > 1 && q < 1000) { S.cant = q; S.actual = ''; }
+  } else if (t === 'mas') { agregarPendiente(); }
+  guardar(); renderSumadora();
+}
+function abrirHoja(html) { $('hoja').innerHTML = '<div class="agarre"></div>' + html; $('hoja').hidden = false; $('velo').hidden = false; $('hoja').scrollTop = 0; }
+function cerrarHoja() { $('hoja').hidden = true; $('velo').hidden = true; S.pendiente = null; guardar(); }
+function lineasCortas(lineas) { var t = lineas.map(textoLinea); return t.length > 6 ? t.slice(0, 6).join(' · ') + ' · …' : t.join(' · '); }
+function hojaPago() {
+  var total = totalCinta(S.cinta);
+  abrirHoja('<h3>Cobrar</h3><span class="grande">' + pesos(total) + '</span>' +
+    '<button class="pago" data-a="pago-efectivo"><span class="ico">💵</span><span>Efectivo<small>Entra a la caja</small></span></button>' +
+    '<button class="pago" data-a="pago-digital"><span class="ico">📱</span><span>Nequi, Daviplata o transferencia<small>No entra a la gaveta</small></span></button>' +
+    '<button class="pago" data-a="pago-fiado"><span class="ico">📒</span><span>Fiado<small>Se anota en la cuenta del cliente</small></span></button>' +
+    '<button class="btn gris" data-a="cerrar-hoja">Volver</button>');
+}
+function billetesPara(total) {
+  var c = [total, Math.ceil(total / 1000) * 1000, Math.ceil(total / 5000) * 5000, Math.ceil(total / 10000) * 10000, 20000, 50000, 100000];
+  var vistos = {}; var out = [];
+  c.forEach(function (v) { if (v >= total && !vistos[v]) { vistos[v] = 1; out.push(v); } });
+  return out.slice(0, 6);
+}
+function hojaEfectivo(pagaCon) {
+  var total = totalCinta(S.cinta);
+  var bs = billetesPara(total).map(function (v) { return '<button class="billete' + (pagaCon === v ? ' sel' : '') + '" data-b="' + v + '">' + (v === total ? 'Exacto' : pesos(v)) + '</button>'; }).join('');
+  var vu = pagaCon ? '<div class="vueltas">Vueltas: <b>' + pesos(pagaCon - total) + '</b></div>' : '<div class="vueltas suave chica">¿Con cuánto paga? (opcional)</div>';
+  abrirHoja('<h3>Efectivo</h3><span class="grande">' + pesos(total) + '</span><div class="billetes">' + bs + '</div>' + vu +
+    '<div class="pila"><button class="btn verde" data-a="guardar-efectivo">Guardar venta</button><button class="btn gris" data-a="cobrar">Volver</button></div>');
+}
+function registrarVenta(pago) {
+  var total = totalCinta(S.cinta);
+  S.dia.ventas.push({ pago: pago, total: total, lineas: S.cinta.slice() });
+  S.cinta = []; S.actual = ''; S.cant = 0; cerrarHoja(); renderSumadora();
+  aviso(pago === 'efectivo' ? 'Venta de ' + pesos(total) + ' guardada · entró a la caja' : 'Venta de ' + pesos(total) + ' guardada · plata digital, no entra a la gaveta');
+}
+function filasClientes(filtro) {
+  var f = filtro ? filtro.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
+  var lista = S.clientes.filter(function (c) { return !f || c.nombre.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase().indexOf(f) >= 0; });
+  if (lista.length === 0) { return '<p class="centro suave">No hay clientes con ese nombre.</p>'; }
+  return lista.map(function (c) { var s = saldoDe(c); return '<button class="cli" data-cli="' + c.id + '"><span class="av">' + esc(iniciales(c.nombre)) + '</span><span class="mt"><b>' + esc(limpio(c.nombre)) + '</b><small>' + (s > 0 ? 'Debe ' + pesos(s) : s < 0 ? 'A favor ' + pesos(-s) : 'Al día') + '</small></span></button>'; }).join('');
+}
+function hojaClientes() {
+  var total = totalCinta(S.cinta);
+  abrirHoja('<h3>¿A quién le fías ' + pesos(total) + '?</h3><input class="buscar" id="buscar-cli" type="search" placeholder="Buscar cliente" autocomplete="off"><div id="lista-cli">' + filasClientes('') + '</div>' +
+    '<div class="pila"><button class="btn sec" data-a="nuevo-cliente">+ Cliente nuevo</button><button class="btn gris" data-a="cobrar">Volver</button></div>');
+}
+function hojaNuevoCliente() {
+  abrirHoja('<h3>Cliente nuevo</h3><label class="campo"><span>Nombre</span><input id="nc-nombre" type="text" autocomplete="off" placeholder="Ej. Marta Gómez"></label>' +
+    '<label class="campo"><span>WhatsApp (opcional)</span><input id="nc-tel" type="tel" inputmode="numeric" placeholder="Ej. 3001234567"></label>' +
+    '<div class="pila"><button class="btn prim" data-a="guardar-cliente">Guardar cliente</button><button class="btn gris" data-a="pago-fiado">Volver</button></div>');
+}
+function hojaConfirmar(id) {
+  var c = clientePor(id); if (!c) { return; }
+  S.cliSel = id; guardar();
+  var total = totalCinta(S.cinta);
+  abrirHoja('<div class="confirmar"><div class="tit-hoja">Revisa a quién le cargas el fiado</div><span class="av">' + esc(iniciales(c.nombre)) + '</span><div class="nombre">' + esc(limpio(c.nombre)) + '</div>' +
+    '<div class="valor">Fiado de ' + pesos(total) + '</div><div class="detalle">' + cuantos(unidades(S.cinta)) + ': ' + esc(lineasCortas(S.cinta)) + '</div>' +
+    '<div class="pila"><button class="btn prim" data-a="guardar-fiado">Sí, guardar</button><button class="btn gris" data-a="pago-fiado">Cancelar</button></div></div>');
+}
+function textoWhatsAppFiado() {
+  var u = S.ultimo; var c = clientePor(u.cli);
+  return mensajeFiado(S.negocio, c.nombre, u.lineas, S.hoy, saldoDe(c), S.formato);
+}
+function hojaListoFiado() {
+  var u = S.ultimo; var c = clientePor(u.cli); var s = saldoDe(c);
+  abrirHoja('<div class="ok">✓</div><h3 style="margin-block-start: 10px;">Fiado guardado</h3><p class="centro" style="margin-block: 2px 8px;">' + esc(limpio(c.nombre)) + ' ' + (s >= 0 ? 'ahora debe <b class="rojo-t">' + pesos(s) + '</b>' : 'tiene saldo a favor de <b class="verde-t">' + pesos(-s) + '</b>') + '</p>' +
+    '<div class="chica suave">Así le llega por WhatsApp:</div><div class="formato"><button data-f="lista" class="' + (S.formato === 'lista' ? 'sel' : '') + '">Con los valores</button><button data-f="total" class="' + (S.formato === 'total' ? 'sel' : '') + '">Solo el total</button></div>' +
+    '<div class="wa-fondo"><div class="burbuja">' + esc(textoWhatsAppFiado()) + '</div></div>' +
+    '<div class="pila" style="margin-block-start: 12px;"><button class="btn verde" data-a="wa-fiado">Enviar por WhatsApp</button><button class="btn gris" data-a="cerrar-hoja">Listo</button></div>');
+}
+function abrirWhatsApp(texto, tel) {
+  var d = String(tel || '').replace(/\D/g, '');
+  var base = d.length === 10 ? 'https://wa.me/57' + d : 'https://wa.me/';
+  window.open(base + '?text=' + encodeURIComponent(texto), '_blank');
+}
+function renderCliente() {
+  var c = clientePor(S.cliSel); if (!c) { mostrar('inicio'); return; }
+  var s = saldoDe(c);
+  $('cli-nombre').textContent = limpio(c.nombre);
+  $('cli-saldo').textContent = pesos(Math.abs(s)); $('cli-saldo').className = s > 0 ? 'rojo-t' : 'verde-t';
+  $('cli-saldo').previousElementSibling.textContent = s > 0 ? 'DEBE' : s < 0 ? 'SALDO A FAVOR' : 'AL DÍA';
+  var movs = c.movs.slice().reverse();
+  $('cli-movs').innerHTML = movs.length === 0 ? '<p class="centro suave" style="margin: 0;">Sin movimientos todavía.</p>' : movs.map(function (m) {
+    return '<div class="mov"><span><b>' + (m.t === 'fiado' ? 'Fiado' : 'Abono') + '</b><small>' + fechaCorta(m.f) + '</small>' + (m.lineas && m.lineas.length ? '<span class="vals">' + esc(lineasCortas(m.lineas)) + '</span>' : '') + '</span><b class="' + (m.t === 'fiado' ? 'rojo-t' : 'verde-t') + '">' + (m.t === 'fiado' ? '' : '-') + pesos(m.total) + '</b></div>';
+  }).join('') + '<button class="btn sec" style="margin-block-start: 12px;" data-a="abono">+ Abono</button>';
+}
+function hojaAbono() {
+  var c = clientePor(S.cliSel);
+  abrirHoja('<h3>Abono de ' + esc(limpio(c.nombre)) + '</h3><p class="centro suave chica">Debe ' + pesos(saldoDe(c)) + '</p><label class="campo"><span>¿Cuánto abonó?</span><input id="ab-valor" type="number" inputmode="numeric" placeholder="Ej. 10000"></label>' +
+    '<div class="pila"><button class="btn verde" data-a="guardar-abono">Guardar abono en efectivo</button><button class="btn gris" data-a="cerrar-hoja">Cancelar</button></div>');
+}
+function renderCierre() {
+  var r = resumenDia(S.negocio, S.hoy, S.dia, mr(), mp(), S.racha);
+  var nada = S.dia.ventas.length + S.dia.fiados.length + S.dia.abonos.length === 0;
+  if (!S.cerroHoy) {
+    $('cierre-cont').innerHTML = '<div class="tarjeta"><b>Hoy, ' + fechaCorta(S.hoy) + '</b>' +
+      '<div class="fila-dato"><span>💵 Ventas en efectivo (' + r.nEfectivo + ')</span><b>' + pesos(r.efectivo) + '</b></div>' +
+      '<div class="fila-dato"><span>📱 Nequi o transferencia (' + r.nDigital + ')</span><b>' + pesos(r.digital) + '</b></div>' +
+      '<div class="fila-dato"><span>📒 Fiados (' + r.nFiados + ')</span><b>' + pesos(r.fiados) + '</b></div>' +
+      '<div class="fila-dato"><span>🤝 Abonos recibidos</span><b>' + pesos(r.abonos) + '</b></div>' +
+      '<div class="fila-dato total"><span>Total vendido</span><b>' + pesos(r.vendido) + '</b></div>' +
+      '<div class="fila-dato"><span>Ganancia bruta aproximada<br><small class="suave">antes de gastos</small></span><b class="verde-t">' + pesos(r.bruta) + '</b></div>' +
+      (r.vendido > 0 ? '<div class="desglose">Exacta ' + pesos(r.exacta) + ' (productos con costo) + estimada ' + pesos(r.estimada) + ' (con tu margen)</div>' : '') +
+      '<details class="que"><summary>¿Qué es la ganancia bruta?</summary>Es lo que vendiste menos lo que te costó lo que vendiste. Todavía no le has restado el arriendo, la luz, el gas ni tu sueldo: lo que queda después de eso es la utilidad.</details></div>' +
+      (nada ? '<p class="centro suave">Hoy no hay nada anotado todavía. Puedes cerrar igual.</p>' : '') +
+      '<button class="btn prim grande" data-a="cerrar-dia">Cerrar el día</button><p class="centro chica suave">Toma 2 minutos. Llevas ' + S.racha + ' días seguidos.</p>';
+    return;
+  }
+  var sem = semanaRacha(S.hoy, S.racha).map(function (d) { return '<span class="dia' + (d.hecho ? ' hecho' : '') + (d.hoy ? ' hoy' : '') + '"><i>' + (d.hecho ? '🔥' : '·') + '</i>' + d.letra + '</span>'; }).join('');
+  var horas = ['6:00 p. m.', '7:00 p. m.', '8:00 p. m.', '9:00 p. m.'].map(function (h) { return '<button class="hora' + (S.hora === h ? ' sel' : '') + '" data-h="' + h + '">' + h + '</button>'; }).join('');
+  $('cierre-cont').innerHTML = '<div class="tarjeta centro"><div class="fuego">🔥</div><b style="font-size: 22px;">¡' + S.racha + ' días seguidos cerrando el día!</b>' +
+    '<div class="semana">' + sem + '</div><p class="chica suave" style="margin: 0;">Un día libre a la semana no rompe tu racha.</p></div>' +
+    leccionHtml(r) +
+    '<div class="tarjeta"><b>Total vendido hoy: ' + pesos(r.vendido) + '</b><p class="chica suave" style="margin-block: 4px 10px;">Ganancia bruta aproximada: ' + pesos(r.bruta) + ' (antes de gastos)</p><button class="btn verde" data-a="wa-resumen">Enviar el resumen por WhatsApp</button><p class="chica suave" style="margin-block: 8px 0;">Para la dueña, para un socio o para ti.</p></div>' +
+    '<div class="tarjeta"><b>¿A qué hora te recuerdo cerrar el día?</b><div class="horas">' + horas + '</div>' +
+    '<div class="bloqueo"><div class="reloj">' + esc(S.hora.replace(' p. m.', '')) + '</div><div class="notif"><span class="logo">F</span><span><b>FiApp · ahora</b><p>Llevas ' + S.racha + ' días seguidos 🔥 ¿Cerramos el día? Son 2 minutos.</p></span></div></div>' +
+    '<p class="chica suave" style="margin-block: 8px 0;">Un solo aviso al día. Si no lo usas tres días seguidos, te aviso solo una vez por semana.</p></div>' +
+    '<button class="btn gris" data-a="ir-inicio">Volver al Inicio</button>';
+}
+function leccionHtml(r) { var l = leccionDelDia(S.racha, r); return '<div class="tarjeta leccion"><span class="tag">💡 IDEA DEL DÍA</span><b>' + esc(l.titulo) + '</b><p>' + esc(l.texto) + '</p></div>'; }
+function rapido(i) { var rp = S.rapidos[i]; if (!rp) { return; } S.cinta.push({ cant: S.cant > 1 ? S.cant : 1, valor: rp.valor, tipo: rp.tipo || S.tipo, nombre: rp.nombre || null, costo: rp.costo !== undefined ? rp.costo : null }); S.actual = ''; S.cant = 0; guardar(); renderSumadora(); }
+function elegirTipo(t) { S.tipo = t === 'produccion' ? 'produccion' : 'reventa'; guardar(); renderSumadora(); }
+function accion(a, el) {
+  if (a === 'empezar') {
+    var n = limpio($('in-negocio').value); var pr = parseInt($('in-reventa').value, 10); var pp = parseInt($('in-produccion').value, 10);
+    if (!(pr > 0)) { aviso('Escribe en cuánto vendes lo que te cuesta $100'); return; }
+    S.negocio = n || 'Mi Negocio'; S.precioReventa = pr; S.precioProduccion = pp > 0 ? pp : ''; mostrar('inicio');
+  } else if (a === 'ir-inicio') { mostrar('inicio'); }
+  else if (a === 'ir-sumadora') { mostrar('sumadora'); }
+  else if (a === 'ir-cierre') { mostrar('cierre'); }
+  else if (a === 'ir-guia') { S.anterior = S.pantalla; mostrar('guia'); }
+  else if (a === 'volver-guia') { mostrar(S.anterior && S.anterior !== 'guia' ? S.anterior : 'bienvenida'); }
+  else if (a === 'reiniciar') { abrirHoja('<h3>¿Empezar de nuevo?</h3><p class="centro suave">Se borran los clientes y las ventas de prueba de este celular.</p><div class="pila"><button class="btn rojo" data-a="reiniciar-si">Sí, empezar de nuevo</button><button class="btn gris" data-a="cerrar-hoja">Cancelar</button></div>'); }
+  else if (a === 'reiniciar-si') { try { localStorage.removeItem(CLAVE); } catch (e) { S = null; } S = inicial(); cerrarHoja(); mostrar('bienvenida'); }
+  else if (a === 'limpiar') { S.cinta = []; S.actual = ''; S.cant = 0; guardar(); renderSumadora(); }
+  else if (a === 'cobrar') { agregarPendiente(); guardar(); renderSumadora(); if (totalCinta(S.cinta) > 0) { hojaPago(); } else { cerrarHoja(); } }
+  else if (a === 'cerrar-hoja') { cerrarHoja(); if (S.pantalla === 'inicio') { renderInicio(); } }
+  else if (a === 'pago-efectivo') { hojaEfectivo(0); }
+  else if (a === 'pago-digital') { registrarVenta('digital'); }
+  else if (a === 'guardar-efectivo') { registrarVenta('efectivo'); }
+  else if (a === 'pago-fiado') { hojaClientes(); }
+  else if (a === 'nuevo-cliente') { hojaNuevoCliente(); }
+  else if (a === 'guardar-cliente') {
+    var nom = limpio($('nc-nombre').value); if (!nom) { aviso('Escribe el nombre del cliente'); return; }
+    var c = { id: 'c' + Date.now(), nombre: nom, tel: $('nc-tel').value, movs: [] }; S.clientes.push(c); guardar(); hojaConfirmar(c.id);
+  }
+  else if (a === 'guardar-fiado') {
+    var cl = clientePor(S.cliSel); var total = totalCinta(S.cinta);
+    cl.movs.push({ t: 'fiado', f: S.hoy, total: total, lineas: S.cinta.slice() });
+    S.dia.fiados.push({ cli: cl.id, total: total, lineas: S.cinta.slice() });
+    S.ultimo = { cli: cl.id, lineas: S.cinta.slice() };
+    S.cinta = []; S.actual = ''; S.cant = 0; guardar(); renderSumadora(); hojaListoFiado();
+  }
+  else if (a === 'wa-fiado') { var cc = clientePor(S.ultimo.cli); abrirWhatsApp(textoWhatsAppFiado(), cc.tel); }
+  else if (a === 'enviar-cuenta') { var c2 = clientePor(S.cliSel); abrirWhatsApp(mensajeCuenta(S.negocio, c2), c2.tel); }
+  else if (a === 'abono') { hojaAbono(); }
+  else if (a === 'guardar-abono') {
+    var v = parseInt($('ab-valor').value, 10); if (!(v > 0)) { aviso('Escribe cuánto abonó'); return; }
+    var c3 = clientePor(S.cliSel); c3.movs.push({ t: 'abono', f: S.hoy, total: v, lineas: [] }); S.dia.abonos.push({ cli: c3.id, total: v });
+    guardar(); cerrarHoja(); renderCliente(); aviso('Abono de ' + pesos(v) + ' guardado · entró a la caja');
+  }
+  else if (a === 'cerrar-dia') { S.cerroHoy = true; S.racha += 1; guardar(); renderCierre(); window.scrollTo(0, 0); }
+  else if (a === 'wa-resumen') { abrirWhatsApp(resumenDia(S.negocio, S.hoy, S.dia, mr(), mp(), S.racha).texto, ''); }
+}
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-a],[data-t],[data-r],[data-cli],[data-b],[data-h],[data-f],[data-quitar],[data-ver],[data-tipo]');
+  if (!el) { return; }
+  if (el.hasAttribute('data-t')) { tecla(el.getAttribute('data-t')); }
+  else if (el.hasAttribute('data-r')) { rapido(parseInt(el.getAttribute('data-r'), 10)); }
+  else if (el.hasAttribute('data-tipo')) { elegirTipo(el.getAttribute('data-tipo')); }
+  else if (el.hasAttribute('data-quitar')) { S.cinta.splice(parseInt(el.getAttribute('data-quitar'), 10), 1); guardar(); renderSumadora(); }
+  else if (el.hasAttribute('data-ver')) { S.cliSel = el.getAttribute('data-ver'); mostrar('cliente'); }
+  else if (el.hasAttribute('data-cli')) { hojaConfirmar(el.getAttribute('data-cli')); }
+  else if (el.hasAttribute('data-b')) { hojaEfectivo(parseInt(el.getAttribute('data-b'), 10)); }
+  else if (el.hasAttribute('data-h')) { S.hora = el.getAttribute('data-h'); guardar(); renderCierre(); }
+  else if (el.hasAttribute('data-f')) { S.formato = el.getAttribute('data-f'); guardar(); hojaListoFiado(); }
+  else { accion(el.getAttribute('data-a'), el); }
+});
+document.addEventListener('input', function (e) { if (!e.target) { return; } if (e.target.id === 'buscar-cli') { $('lista-cli').innerHTML = filasClientes(e.target.value); } else if (e.target.id === 'in-reventa' || e.target.id === 'in-produccion') { renderConversion(); } });
+S = cargar();
+mostrar(S.pantalla === 'guia' ? 'bienvenida' : S.pantalla);
+</script>
+</body>
+</html>
