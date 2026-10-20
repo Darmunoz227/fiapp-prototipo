@@ -1,0 +1,842 @@
+<!DOCTYPE html>
+<html lang="es-CO" dir="ltr">
+<head>
+<meta charset="utf-8">
+<meta name="viewport" content="width=device-width, initial-scale=1, viewport-fit=cover">
+<meta name="color-scheme" content="light">
+<title>FiApp · Prototipo de Mi vitrina</title>
+<style>
+:root { --fondo: #e9ecf1; --app: #f4f5f8; --texto: #1f2937; --suave: #5b6472; --linea: #dde1e6; --blanco: #ffffff; --primario: #0054e9; --primario-o: #0043bb; --rojo: #c5000f; --verde: #1f7a3d; --verde-b: #2a8a47; --oscuro: #222428; --ambar: #b45309; color-scheme: light; }
+@media (prefers-color-scheme: dark) { :root { --fondo: #15181d; } }
+* { box-sizing: border-box; }
+html, body { margin: 0; background: var(--fondo); }
+body { font-family: Roboto, -apple-system, "Segoe UI", Helvetica, Arial, sans-serif; color: var(--texto); line-height: 1.4; -webkit-tap-highlight-color: transparent; }
+button { font: inherit; color: inherit; border: 0; background: none; cursor: pointer; }
+.app { position: relative; max-inline-size: 430px; min-block-size: 100vh; margin-inline: auto; background: var(--app); overflow: hidden; }
+[hidden] { display: none !important; }
+.cab { display: flex; align-items: center; gap: 8px; min-block-size: 56px; padding-inline: 12px; background: var(--oscuro); color: #ffffff; position: sticky; inset-block-start: 0; z-index: 2; }
+.cab .tit { flex: 1 1 auto; font-weight: 700; font-size: 17px; text-align: center; }
+.cab .lado { min-inline-size: 74px; font-size: 15px; color: #ffffff; text-align: start; padding-block: 8px; }
+.cab .lado.fin { text-align: end; }
+.racha { display: inline-flex; align-items: center; gap: 4px; background: #3a3d44; border-radius: 999px; padding-block: 4px; padding-inline: 10px; font-weight: 700; font-size: 14px; }
+.cont { padding: 14px 14px 28px; }
+.tarjeta { background: var(--blanco); border-radius: 16px; padding: 16px; box-shadow: 0 3px 10px rgba(15, 23, 42, 0.06); margin-block-end: 12px; }
+.total-deuda { text-align: center; }
+.total-deuda small { display: block; color: #6b7280; font-weight: 700; letter-spacing: 1px; font-size: 12px; }
+.total-deuda b { display: block; font-size: 32px; font-weight: 800; }
+.btn { display: flex; align-items: center; justify-content: center; gap: 10px; inline-size: 100%; min-block-size: 54px; border-radius: 14px; font-weight: 700; font-size: 17px; padding-inline: 14px; }
+.btn.prim { background: var(--primario); color: #ffffff; }
+.btn.grande { min-block-size: 76px; font-size: 20px; }
+.btn.sec { background: var(--blanco); color: var(--primario-o); border: 2px solid #b9cdfa; }
+.btn.verde { background: var(--verde-b); color: #ffffff; }
+.btn.rojo { background: var(--rojo); color: #ffffff; }
+.btn.gris { background: #e5e7eb; color: #374151; }
+.btn[disabled] { opacity: 0.45; }
+.pila > * + * { margin-block-start: 10px; }
+h2 { font-size: 16px; margin-block: 18px 8px; }
+.cli { display: flex; align-items: center; gap: 12px; inline-size: 100%; text-align: start; background: var(--blanco); border-radius: 12px; padding-block: 12px; padding-inline: 12px; margin-block-end: 8px; }
+.cli b { display: block; font-size: 16px; }
+.cli small { color: #6b7280; }
+.cli .mt { flex: 1 1 auto; min-inline-size: 0; }
+.cli .monto { font-weight: 800; white-space: nowrap; }
+.av { display: inline-flex; align-items: center; justify-content: center; inline-size: 40px; block-size: 40px; border-radius: 50%; background: #e6eefd; color: var(--primario-o); font-weight: 800; font-size: 14px; flex: 0 0 auto; }
+.rojo-t { color: var(--rojo); } .verde-t { color: var(--verde); } .suave { color: var(--suave); }
+.chica { font-size: 13px; }
+.centro { text-align: center; }
+/* sumadora */
+.cinta { background: var(--blanco); border-radius: 14px; min-block-size: 120px; max-block-size: 34vh; overflow-y: auto; padding-block: 6px; padding-inline: 12px; box-shadow: inset 0 0 0 1px var(--linea); }
+.cinta .vacia { color: #9ca3af; text-align: center; padding-block: 44px; }
+.linea { display: flex; align-items: center; gap: 8px; padding-block: 7px; border-block-end: 1px dashed #e5e7eb; font-variant-numeric: tabular-nums; }
+.linea .n { color: #9ca3af; inline-size: 22px; font-size: 13px; }
+.linea .d { flex: 1 1 auto; color: #6b7280; font-size: 14px; }
+.linea .v { font-weight: 700; font-size: 18px; }
+.linea .x { inline-size: 32px; block-size: 32px; border-radius: 50%; color: #9ca3af; font-size: 18px; }
+.pantallita { display: flex; align-items: baseline; justify-content: space-between; gap: 10px; margin-block: 10px 8px; padding-inline: 4px; }
+.pantallita .actual { font-size: 22px; color: var(--primario-o); font-weight: 700; min-block-size: 30px; font-variant-numeric: tabular-nums; }
+.pantallita .tot { text-align: end; }
+.pantallita .tot small { display: block; color: #6b7280; font-size: 12px; font-weight: 700; letter-spacing: 1px; }
+.pantallita .tot b { font-size: 30px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.rapidos { display: flex; gap: 8px; overflow-x: auto; padding-block-end: 8px; }
+.rapido { flex: 0 0 auto; background: #fff7e6; color: var(--ambar); border: 1px solid #f5d79e; border-radius: 999px; padding-block: 8px; padding-inline: 14px; font-weight: 700; font-size: 15px; }
+.teclado { display: grid; grid-template-columns: repeat(4, 1fr); gap: 8px; }
+.tecla { min-block-size: 58px; border-radius: 12px; background: var(--blanco); font-size: 24px; font-weight: 600; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); }
+.tecla.op { background: #e6eefd; color: var(--primario-o); font-weight: 800; }
+.tecla.mas { grid-row: span 3; background: var(--primario); color: #ffffff; font-size: 30px; }
+.acciones { display: flex; gap: 10px; margin-block-start: 12px; }
+.acciones .btn { flex: 1 1 auto; }
+.acciones .btn.gris { flex: 0 0 34%; }
+/* hojas */
+.velo { position: fixed; inset: 0; background: rgba(0, 0, 0, 0.45); z-index: 10; }
+.hoja { position: fixed; inset-inline: 0; inset-block-end: 0; max-inline-size: 430px; margin-inline: auto; max-block-size: 92vh; overflow-y: auto; background: var(--blanco); border-start-start-radius: 20px; border-start-end-radius: 20px; padding: 16px 16px 22px; z-index: 11; box-shadow: 0 -8px 24px rgba(0, 0, 0, 0.2); }
+.hoja .agarre { inline-size: 40px; block-size: 5px; border-radius: 3px; background: #d1d5db; margin-inline: auto; margin-block-end: 12px; }
+.hoja h3 { margin-block: 0 4px; font-size: 18px; text-align: center; }
+.hoja .grande { display: block; text-align: center; font-size: 34px; font-weight: 800; margin-block: 4px 12px; font-variant-numeric: tabular-nums; }
+.pago { display: flex; align-items: center; gap: 14px; inline-size: 100%; text-align: start; border: 2px solid var(--linea); border-radius: 14px; padding-block: 14px; padding-inline: 14px; margin-block-end: 10px; font-size: 18px; font-weight: 700; }
+.pago small { display: block; font-size: 13px; font-weight: 400; color: #6b7280; }
+.pago .ico { font-size: 28px; }
+.billetes { display: grid; grid-template-columns: repeat(2, 1fr); gap: 8px; margin-block: 8px 12px; }
+.billete { min-block-size: 50px; border-radius: 12px; background: #eef7f1; color: var(--verde); font-weight: 800; font-size: 17px; border: 1px solid #bfe3cb; }
+.billete.sel { background: var(--verde-b); color: #ffffff; }
+.vueltas { text-align: center; font-size: 18px; margin-block: 6px 12px; }
+.vueltas b { font-size: 24px; }
+.buscar { display: block; inline-size: 100%; font: inherit; font-size: 16px; border: 1px solid var(--linea); border-radius: 12px; padding-block: 12px; padding-inline: 12px; margin-block: 6px 10px; background: #f9fafb; }
+.campo { display: block; margin-block-end: 10px; }
+.campo span { display: block; font-size: 13px; color: #4b5563; margin-block-end: 4px; }
+.campo input { display: block; inline-size: 100%; font: inherit; font-size: 17px; border: 1px solid var(--linea); border-radius: 12px; padding-block: 12px; padding-inline: 12px; }
+.confirmar { text-align: center; }
+.confirmar .tit-hoja { font-weight: 700; color: #374151; }
+.confirmar .av { inline-size: 64px; block-size: 64px; font-size: 22px; margin-block: 12px 6px; }
+.confirmar .nombre { font-size: 26px; font-weight: 800; }
+.confirmar .valor { font-size: 22px; font-weight: 800; color: var(--rojo); margin-block: 4px; }
+.confirmar .detalle { color: #4b5563; margin-block: 2px 14px; }
+.ok { margin-inline: auto; inline-size: 56px; block-size: 56px; border-radius: 50%; background: #e3f4e8; color: var(--verde); font-size: 30px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.burbuja { background: #e7fbd8; border-radius: 12px; padding: 12px; white-space: pre-wrap; font-size: 15px; margin-block: 10px; box-shadow: 0 1px 2px rgba(0, 0, 0, 0.12); font-variant-numeric: tabular-nums; }
+.wa-fondo { background: #efe7de; border-radius: 14px; padding-block: 8px; padding-inline: 10px; }
+.formato { display: flex; gap: 6px; background: #eef0f3; border-radius: 12px; padding: 4px; margin-block: 8px; }
+.formato button { flex: 1 1 0; border-radius: 9px; padding-block: 9px; font-weight: 700; color: #4b5563; }
+.formato button.sel { background: var(--blanco); color: var(--primario-o); box-shadow: 0 1px 3px rgba(0, 0, 0, 0.15); }
+.aviso { position: fixed; inset-inline: 0; inset-block-start: 14px; max-inline-size: 400px; margin-inline: auto; background: #1f2937; color: #ffffff; border-radius: 12px; padding-block: 12px; padding-inline: 14px; z-index: 30; box-shadow: 0 8px 20px rgba(0, 0, 0, 0.3); font-weight: 600; }
+.fila-dato { display: flex; justify-content: space-between; gap: 10px; padding-block: 9px; border-block-end: 1px solid #eef0f3; }
+.fila-dato b { font-variant-numeric: tabular-nums; }
+.fila-dato.total { border-block-end: 0; font-size: 18px; }
+.mov { display: flex; justify-content: space-between; gap: 8px; padding-block: 10px; border-block-end: 1px solid #eef0f3; }
+.mov small { display: block; color: #6b7280; font-size: 13px; }
+.mov .vals { color: #6b7280; font-size: 13px; }
+.semana { display: flex; justify-content: space-between; margin-block: 12px; }
+.dia { display: flex; flex-direction: column; align-items: center; gap: 4px; font-size: 13px; color: #6b7280; }
+.dia i { display: flex; align-items: center; justify-content: center; inline-size: 34px; block-size: 34px; border-radius: 50%; background: #eef0f3; font-style: normal; font-size: 16px; }
+.dia.hecho i { background: #ffedd5; }
+.dia.hoy i { outline: 2px solid #f59e0b; }
+.fuego { font-size: 54px; text-align: center; margin-block: 4px; }
+.horas { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 8px 12px; }
+.hora { border-radius: 999px; border: 1px solid var(--linea); padding-block: 9px; padding-inline: 14px; font-weight: 700; background: var(--blanco); }
+.hora.sel { background: var(--primario); color: #ffffff; border-color: var(--primario); }
+.notif { display: flex; gap: 10px; align-items: flex-start; background: rgba(250, 250, 252, 0.96); border-radius: 18px; padding: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.18); }
+.notif .logo { flex: 0 0 auto; inline-size: 38px; block-size: 38px; border-radius: 9px; background: var(--primario); color: #ffffff; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.notif b { display: block; font-size: 14px; }
+.notif p { margin: 2px 0 0; font-size: 14px; }
+.bloqueo { background: linear-gradient(160deg, #3b4b6b, #1f2a40); border-radius: 18px; padding: 18px 12px; }
+.bloqueo .reloj { color: #ffffff; text-align: center; font-size: 40px; font-weight: 300; margin-block-end: 12px; }
+.guia h3 { margin-block: 16px 6px; font-size: 16px; }
+.guia li { margin-block-end: 6px; }
+.enlace { color: var(--primario-o); font-weight: 700; text-decoration: underline; padding-block: 8px; }
+.marca { text-align: center; padding-block: 26px 8px; }
+.marca .logo { margin-inline: auto; inline-size: 72px; block-size: 72px; border-radius: 18px; background: var(--primario); color: #ffffff; font-size: 34px; font-weight: 800; display: flex; align-items: center; justify-content: center; }
+.etiqueta-proto { display: inline-block; background: #fff7e6; color: var(--ambar); border: 1px solid #f5d79e; border-radius: 999px; padding-block: 2px; padding-inline: 10px; font-size: 12px; font-weight: 700; }
+.conversion { margin-block: -4px 12px; font-size: 13px; color: var(--verde); font-weight: 600; min-block-size: 4px; }
+.formato.tipo { margin-block: 0 8px; }
+.linea .etq { display: inline-block; font-size: 12px; background: #fff7e6; color: var(--ambar); border-radius: 6px; padding-inline: 5px; margin-inline-end: 4px; }
+.linea .etq.costo { background: #e3f4e8; color: var(--verde); }
+details.que { margin-block: 2px 8px; font-size: 13px; color: #4b5563; }
+details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointer; }
+.leccion { background: #eef4ff; border: 1px solid #c7d7fb; }
+.leccion .tag { display: inline-block; font-size: 12px; font-weight: 800; color: var(--primario-o); letter-spacing: 0.5px; }
+.leccion b { display: block; font-size: 17px; margin-block: 4px; }
+.leccion p { margin: 0; }
+.desglose { font-size: 13px; color: #6b7280; text-align: end; }
+.oculto { position: absolute; inline-size: 1px; block-size: 1px; overflow: hidden; clip: rect(0 0 0 0); clip-path: inset(50%); white-space: nowrap; opacity: 0; }
+.chips { display: flex; flex-wrap: wrap; gap: 8px; margin-block: 6px 4px; }
+.chip { border-radius: 999px; border: 1px solid var(--linea); background: var(--blanco); padding-block: 8px; padding-inline: 12px; font-weight: 700; font-size: 15px; color: #374151; }
+.chip.sel { background: var(--primario); border-color: var(--primario); color: #ffffff; }
+.fila-otra { display: flex; gap: 8px; margin-block-start: 6px; }
+.fila-otra input { flex: 1 1 auto; font: inherit; font-size: 16px; border: 1px solid var(--linea); border-radius: 12px; padding-block: 10px; padding-inline: 12px; }
+.fila-otra .btn { inline-size: auto; min-block-size: 46px; font-size: 15px; }
+.mision { border: 2px solid #f5d79e; background: #fffbf2; }
+.mision-tit { display: flex; justify-content: space-between; align-items: center; color: var(--ambar); font-weight: 800; font-size: 14px; letter-spacing: 0.3px; }
+.mision-texto { display: block; font-size: 21px; margin-block: 6px 10px; }
+.barra { block-size: 14px; border-radius: 999px; background: #f3e8d2; overflow: hidden; }
+.barra span { display: block; block-size: 100%; border-radius: 999px; background: linear-gradient(90deg, #f59e0b, #f97316); }
+.mision-sub { font-size: 14px; color: #6b7280; margin-block: 6px 12px; }
+.stats { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-block-end: 12px; }
+.stat { background: var(--blanco); border-radius: 14px; padding-block: 10px; padding-inline: 8px; text-align: center; box-shadow: 0 2px 6px rgba(15, 23, 42, 0.05); }
+.stat b { display: block; font-size: 19px; font-variant-numeric: tabular-nums; }
+.stat small { color: #6b7280; font-size: 12px; }
+.seccion-fila { display: flex; align-items: center; gap: 10px; inline-size: 100%; text-align: start; background: var(--blanco); border-radius: 12px; padding-block: 12px; padding-inline: 12px; margin-block-end: 8px; }
+.seccion-fila .ico { font-size: 24px; }
+.seccion-fila .mt { flex: 1 1 auto; }
+.seccion-fila .hoy { font-size: 12px; font-weight: 800; color: var(--ambar); background: #fff7e6; border: 1px solid #f5d79e; border-radius: 999px; padding-block: 2px; padding-inline: 8px; }
+.foto-vacia { background: var(--blanco); border: 2px dashed #c7cdd6; border-radius: 16px; padding: 18px; text-align: center; margin-block-end: 12px; }
+.foto-vacia .foto-ico { font-size: 44px; margin-block-end: 8px; }
+.foto-vacia .btn + .btn { margin-block-start: 8px; }
+.foto-prev { margin-block-end: 12px; }
+.foto-prev img { display: block; inline-size: 100%; max-block-size: 300px; object-fit: cover; border-radius: 16px; background: #e5e7eb; }
+.foto-acc { display: flex; gap: 8px; margin-block-start: 8px; }
+.foto-acc .btn { min-block-size: 44px; font-size: 15px; }
+.talla-fila { display: flex; align-items: center; gap: 10px; background: var(--blanco); border-radius: 12px; padding-block: 6px; padding-inline: 12px; margin-block-end: 6px; }
+.talla-fila .talla { flex: 1 1 auto; font-weight: 800; font-size: 18px; }
+.paso { inline-size: 46px; block-size: 46px; border-radius: 12px; background: #e6eefd; color: var(--primario-o); font-size: 26px; font-weight: 800; }
+.talla-fila .cant { min-inline-size: 34px; text-align: center; font-size: 22px; font-weight: 800; font-variant-numeric: tabular-nums; }
+.grilla { display: grid; grid-template-columns: repeat(2, 1fr); gap: 10px; }
+.prenda { display: flex; flex-direction: column; text-align: start; background: var(--blanco); border-radius: 14px; overflow: hidden; box-shadow: 0 2px 8px rgba(15, 23, 42, 0.07); padding: 0; }
+.prenda .foto { display: flex; align-items: center; justify-content: center; inline-size: 100%; aspect-ratio: 1 / 1; background: #eef0f3; font-size: 54px; overflow: hidden; }
+.prenda .foto img { inline-size: 100%; block-size: 100%; object-fit: cover; }
+.prenda .info { display: block; padding-block: 8px 10px; padding-inline: 10px; }
+.prenda .info b { display: block; font-size: 15px; white-space: nowrap; overflow: hidden; text-overflow: ellipsis; }
+.prenda .precio { display: block; font-weight: 800; font-size: 17px; color: var(--primario-o); }
+.prenda .info small { color: #6b7280; font-size: 13px; }
+.prenda.agotada { opacity: 0.55; }
+.prenda.agotada small { color: var(--rojo); font-weight: 700; }
+.vacio { text-align: center; color: #6b7280; padding-block: 28px; }
+.vacio .grande-ico { font-size: 48px; }
+.carrito { position: fixed; inset-inline: 0; inset-block-end: 0; max-inline-size: 430px; margin-inline: auto; display: flex; align-items: center; gap: 10px; background: #1f2937; color: #ffffff; padding-block: 12px; padding-inline: 14px; z-index: 5; box-shadow: 0 -6px 18px rgba(0, 0, 0, 0.2); }
+.carrito span { flex: 1 1 auto; font-weight: 700; }
+.carrito .btn { inline-size: auto; min-block-size: 48px; }
+.con-carrito { padding-block-end: 90px; }
+.tallas-venta { display: grid; grid-template-columns: repeat(3, 1fr); gap: 8px; margin-block: 10px 12px; }
+.talla-btn { border-radius: 14px; background: #e6eefd; color: var(--primario-o); padding-block: 12px; }
+.talla-btn b { display: block; font-size: 22px; }
+.talla-btn small { color: #4b5563; font-size: 12px; }
+.item-c { display: flex; align-items: center; gap: 10px; padding-block: 8px; border-block-end: 1px solid #eef0f3; }
+.item-c .mt { flex: 1 1 auto; }
+.item-c small { display: block; color: #6b7280; }
+.fiesta { font-size: 64px; text-align: center; }
+.previa { display: block; inline-size: 62%; margin-inline: auto; border-radius: 12px; box-shadow: 0 6px 18px rgba(0, 0, 0, 0.2); margin-block: 6px 12px; }
+.hoja-foto { display: block; inline-size: 100%; max-block-size: 320px; object-fit: cover; border-radius: 14px; background: #eef0f3; margin-block-end: 10px; }
+.hoja-emoji { font-size: 96px; text-align: center; background: #eef0f3; border-radius: 14px; margin-block-end: 10px; }
+.tallas-lista { display: flex; flex-wrap: wrap; gap: 6px; margin-block: 6px 10px; }
+.tallas-lista span { border-radius: 8px; background: #eef0f3; padding-block: 4px; padding-inline: 8px; font-weight: 700; font-size: 14px; }
+.tallas-lista span.cero { color: #9ca3af; text-decoration: line-through; }
+.titulo-sec { display: flex; justify-content: space-between; align-items: baseline; }
+.item-c .x { inline-size: 34px; block-size: 34px; border-radius: 50%; color: #9ca3af; font-size: 18px; }
+</style>
+</head>
+<body>
+<div class="app" id="app">
+
+<section id="p-bienvenida" data-pantalla>
+  <div class="cont">
+    <div class="marca">
+      <div class="logo">F</div>
+      <h1 style="margin-block: 12px 4px; font-size: 24px;">FiApp · Mi vitrina</h1>
+      <span class="etiqueta-proto">Prototipo para probar · las fotos quedan solo en este celular</span>
+    </div>
+    <div class="tarjeta">
+      <p style="margin-block: 0 12px;">Carga tu mercancía de a poquito, con una foto, y comparte tu <b>vitrina</b> en el estado de WhatsApp.</p>
+      <label class="campo"><span>Nombre del negocio</span><input id="in-negocio" type="text" autocomplete="off" placeholder="Ej. Almacén Yudith"></label>
+      <label class="campo"><span>WhatsApp del negocio (sale en tu vitrina)</span><input id="in-tel" type="tel" inputmode="numeric" placeholder="Ej. 3001234567"></label>
+      <div class="campo"><span>¿Qué secciones tienes? (toca las que sí)</span><div class="chips" id="bv-secciones"></div>
+        <div class="fila-otra"><input id="in-otra" type="text" autocomplete="off" placeholder="Otra sección"><button class="btn sec" data-a="agregar-seccion">Agregar</button></div></div>
+      <div class="campo"><span>¿Cuántas prendas quieres cargar al día?</span><div class="chips" id="bv-meta"></div></div>
+      <button class="btn prim grande" data-a="empezar">Empezar</button>
+      <button class="btn sec" style="margin-block-start: 10px;" data-a="ejemplo">Ver cómo se ve, con un ejemplo</button>
+    </div>
+    <p class="centro"><button class="enlace" data-a="ir-guia">Guía para la visita (para Diego)</button></p>
+  </div>
+</section>
+
+<section id="p-inicio" data-pantalla hidden>
+  <header class="cab"><span class="lado" id="ini-negocio">Mi Negocio</span><span class="tit">Inicio</span><span class="lado fin"><span class="racha" id="ini-racha">🔥 0</span></span></header>
+  <div class="cont">
+    <div id="ini-mision"></div>
+    <div class="stats" id="ini-stats"></div>
+    <div class="pila">
+      <button class="btn verde grande" data-a="ir-vender">🛍️ Vender</button>
+      <button class="btn sec" data-a="ir-vitrina">🖼️ Mi vitrina</button>
+      <button class="btn sec" data-a="ir-cierre" id="ini-cierre">🌙 Cerrar el día</button>
+    </div>
+    <h2 class="titulo-sec"><span>Mis secciones</span><small class="suave chica">Toca una para la misión de hoy</small></h2>
+    <div id="ini-secciones"></div>
+    <p class="centro chica suave"><button class="enlace" data-a="ir-guia">Guía para la visita</button> · <button class="enlace" data-a="reiniciar">Empezar de nuevo</button></p>
+  </div>
+</section>
+
+<section id="p-cargar" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Cargar prenda</span><span class="lado fin"><span class="racha" id="car-progreso">0/5</span></span></header>
+  <div class="cont">
+    <div id="car-foto"></div>
+    <label class="campo"><span>¿Qué es?</span><input id="car-nombre" type="text" autocomplete="off" placeholder="Ej. Camiseta Colombia"></label>
+    <div class="campo"><span>Sección</span><div class="chips" id="car-secciones"></div></div>
+    <label class="campo"><span>¿En cuánto la vendes?</span><input id="car-precio" type="number" inputmode="numeric" min="1" placeholder="Ej. 45000"></label>
+    <p class="conversion" id="car-precio-txt"></p>
+    <label class="campo"><span>¿En cuánto la compraste? (opcional, solo tú lo ves)</span><input id="car-costo" type="number" inputmode="numeric" min="1" placeholder="Ej. 28000"></label>
+    <p class="conversion" id="car-margen"></p>
+    <div class="campo"><span>Tallas: ¿cuántas tienes de cada una?</span><div class="formato" id="car-presets"></div><div id="car-tallas"></div><p class="chica suave" id="car-total"></p></div>
+    <p class="chica suave">¿La tienes en varios colores? Carga cada color con su foto.</p>
+    <div class="pila"><button class="btn prim grande" data-a="guardar-otra">Guardar y cargar otra</button><button class="btn sec" data-a="guardar-prenda">Guardar</button></div>
+  </div>
+</section>
+
+<section id="p-vitrina" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Mi vitrina</span><span class="lado fin"></span></header>
+  <div class="cont" id="vit-cont"></div>
+</section>
+
+<section id="p-vender" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Vender</span><span class="lado fin"></span></header>
+  <div class="cont" id="ven-cont"></div>
+  <div class="carrito" id="ven-carrito" hidden></div>
+</section>
+
+<section id="p-cierre" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Cerrar el día</span><span class="lado fin"></span></header>
+  <div class="cont" id="cierre-cont"></div>
+</section>
+
+<section id="p-guia" data-pantalla hidden>
+  <header class="cab"><button class="lado" data-a="volver-guia">‹ Volver</button><span class="tit">Guía para la visita</span><span class="lado fin"></span></header>
+  <div class="cont guia">
+    <div class="tarjeta">
+      <b>Cómo probarlo con Yudith y con Oscar</b>
+      <ol>
+        <li>Escribe con ellos el nombre del negocio, su WhatsApp y sus secciones. Para Oscar: Gorras y Camisetas.</li>
+        <li>Pásale el celular: «cargue 3 prendas de verdad, con su foto». No le expliques nada. Mira cuánto se demora cada una.</li>
+        <li>Abre Mi vitrina y que la comparta en su estado de WhatsApp, o que te la mande a ti.</li>
+        <li>Que venda una prenda tocando la foto y mire cómo bajan las tallas.</li>
+        <li>Cierren el día: ¿entiende la racha, la idea del día y el aviso?</li>
+        <li>Al terminar toca «Empezar de nuevo»: borra sus fotos de tu celular.</li>
+      </ol>
+    </div>
+    <div class="tarjeta">
+      <h3 style="margin-block-start: 0;">Preguntas</h3>
+      <ul>
+        <li>¿Cuántas referencias tiene más o menos? ¿Maneja tallas y colores? ¿Cada color es otra prenda?</li>
+        <li>¿Vende por WhatsApp: estados, catálogo o fotos a clientes? ¿Cuántas veces por semana?</li>
+        <li>¿A qué hora tiene un rato tranquilo para cargar 5 prendas?</li>
+        <li>¿Cómo sabe hoy cuánto le queda de cada prenda y de cada talla?</li>
+        <li>¿Sabe en cuánto compró cada prenda? ¿Le gustaría saber cuánto le gana?</li>
+        <li>¿Vende fiado o por separado (abonos)?</li>
+        <li>¿Usaría la vitrina en su estado? ¿Qué le cambiaría?</li>
+        <li>Oscar: ¿vende en un local o en la calle? ¿El celular nuevo deja instalar la app?</li>
+      </ul>
+    </div>
+  </div>
+</section>
+
+<input class="oculto" type="file" id="in-camara" accept="image/*" capture="environment" aria-label="Tomar foto">
+<input class="oculto" type="file" id="in-galeria" accept="image/*" aria-label="Elegir foto de la galería">
+<div class="velo" id="velo" hidden data-a="cerrar-hoja"></div>
+<div class="hoja" id="hoja" hidden role="dialog" aria-modal="true"></div>
+<div class="aviso" id="aviso" hidden></div>
+</div>
+<script>
+/*LOGICA-INICIO*/
+var MESES = ['ene', 'feb', 'mar', 'abr', 'may', 'jun', 'jul', 'ago', 'sep', 'oct', 'nov', 'dic'];
+var DIAS = ['D', 'L', 'M', 'M', 'J', 'V', 'S'];
+function num(n) { return Math.round(Math.abs(n)).toString().replace(/\B(?=(\d{3})+(?!\d))/g, '.'); }
+function pesos(n) { return (Math.round(n) < 0 ? '-' : '') + '$' + num(n); }
+function decimal2(x) { var t = (Math.round(x * 100) / 100).toFixed(2).replace('.', ','); return t.slice(-3) === ',00' ? t.slice(0, -3) : t; }
+function isoDe(d) { var p = function (x) { return String(x).padStart(2, '0'); }; return d.getFullYear() + '-' + p(d.getMonth() + 1) + '-' + p(d.getDate()); }
+function fechaCorta(iso) { var a = iso.split('-').map(Number); return a[2] + ' ' + MESES[a[1] - 1]; }
+function diasAntes(iso, n) { var a = iso.split('-').map(Number); var d = new Date(a[0], a[1] - 1, a[2]); d.setDate(d.getDate() - n); return isoDe(d); }
+function limpio(s) { return String(s).trim().replace(/\s+/g, ' '); }
+var TALLAS = { ropa: ['XS', 'S', 'M', 'L', 'XL', 'XXL'], numeros: ['4', '6', '8', '10', '12', '14', '16'], calzado: ['35', '36', '37', '38', '39', '40', '41', '42'], unica: ['Única'] };
+var NOMBRE_TALLAS = { ropa: 'Ropa', numeros: 'Números', calzado: 'Calzado', unica: 'Talla única' };
+var SECCIONES_BASE = ['Camisetas', 'Jeans', 'Vestidos', 'Gorras', 'Chaquetas', 'Niños', 'Calzado', 'Accesorios'];
+var EMOJI = { 'Camisetas': '👕', 'Jeans': '👖', 'Vestidos': '👗', 'Gorras': '🧢', 'Chaquetas': '🧥', 'Niños': '🧒', 'Calzado': '👟', 'Accesorios': '👜' };
+function emojiDe(seccion) { return EMOJI[seccion] || '🏷️'; }
+function unidadesDe(p) { return p.tallas.reduce(function (s, t) { return s + t.n; }, 0); }
+function tallasDisponibles(p) { return p.tallas.filter(function (t) { return t.n > 0; }).map(function (t) { return t.t; }); }
+function textoTallas(p) { var d = tallasDisponibles(p); return d.length === 0 ? 'Agotada' : d.join(' · '); }
+function valorMercancia(productos) {
+  return productos.reduce(function (s, p) {
+    var u = unidadesDe(p); var conCosto = p.costo !== null && p.costo !== undefined;
+    return { prendas: s.prendas + 1, unidades: s.unidades + u, venta: s.venta + p.precio * u, costo: s.costo + (conCosto ? p.costo * u : 0), conCosto: s.conCosto + (conCosto ? u : 0), sinCosto: s.sinCosto + (conCosto ? 0 : u) };
+  }, { prendas: 0, unidades: 0, venta: 0, costo: 0, conCosto: 0, sinCosto: 0 });
+}
+function progresoMision(productos, hoy, meta) {
+  var h = productos.filter(function (p) { return p.creado === hoy; }).length;
+  return { hechas: h, meta: meta, cumplida: h >= meta, pct: Math.min(100, Math.round(100 * h / meta)), faltan: Math.max(0, meta - h) };
+}
+function conteoSecciones(productos, secciones) { return secciones.map(function (s) { return { seccion: s, prendas: productos.filter(function (p) { return p.seccion === s; }).length }; }); }
+function seccionSiguiente(secciones, actual) { var i = secciones.indexOf(actual); return secciones.length === 0 ? '' : secciones[(i + 1) % secciones.length]; }
+function margenTexto(precio, costo) {
+  if (!(costo > 0) || !(precio > 0)) { return ''; }
+  if (precio <= costo) { return 'La vendes en lo mismo que te cuesta o menos: no te queda ganancia.'; }
+  return 'Ganas ' + pesos(precio - costo) + ' en cada una. De cada $100 que vendes, te quedan $' + decimal2(100 * (precio - costo) / precio) + '.';
+}
+function telefonoBonito(tel) { var d = String(tel || '').replace(/\D/g, ''); return d.length === 10 ? d.slice(0, 3) + ' ' + d.slice(3, 6) + ' ' + d.slice(6) : d; }
+function textoListaCliente(negocio, productos) {
+  var disp = productos.filter(function (p) { return unidadesDe(p) > 0; }).slice(0, 20);
+  var filas = disp.map(function (p) { return emojiDe(p.seccion) + ' ' + limpio(p.nombre) + ': ' + pesos(p.precio) + ' (' + tallasDisponibles(p).join(', ') + ')'; });
+  return '🛍️ ' + limpio(negocio) + '\nLo que tengo hoy:\n' + filas.join('\n') + '\n\nPídelo por este chat 😊';
+}
+function textoCompartir(negocio, tel) { return 'Mira lo nuevo en ' + limpio(negocio) + ' 🛍️' + (telefonoBonito(tel) ? ' Pídelo por WhatsApp: ' + telefonoBonito(tel) : ''); }
+function quitarUna(p, talla) {
+  var hay = false;
+  var tallas = p.tallas.map(function (t) { if (t.t === talla && t.n > 0 && !hay) { hay = true; return { t: t.t, n: t.n - 1 }; } return { t: t.t, n: t.n }; });
+  if (!hay) { return null; }
+  var q = {}; for (var k in p) { if (Object.prototype.hasOwnProperty.call(p, k)) { q[k] = p[k]; } }
+  q.tallas = tallas; return q;
+}
+function resumenVentasDia(ventas, hoy) {
+  var del = ventas.filter(function (v) { return v.fecha === hoy; });
+  var r = { n: del.length, total: 0, efectivo: 0, digital: 0, unidades: 0, exacta: 0, sinCosto: 0 };
+  del.forEach(function (v) {
+    v.items.forEach(function (it) {
+      r.total += it.precio; r.unidades += 1;
+      if (v.pago === 'efectivo') { r.efectivo += it.precio; } else { r.digital += it.precio; }
+      if (it.costo !== null && it.costo !== undefined) { r.exacta += it.precio - it.costo; } else { r.sinCosto += 1; }
+    });
+  });
+  return r;
+}
+function tallaMasVendida(ventas) {
+  var c = {}; var top = ''; var max = 0;
+  ventas.forEach(function (v) { v.items.forEach(function (it) { c[it.talla] = (c[it.talla] || 0) + 1; if (c[it.talla] > max && it.talla !== 'Única') { max = c[it.talla]; top = it.talla; } }); });
+  return top;
+}
+var IDEAS = 5;
+function leccionVitrina(racha, d) {
+  var i = ((racha + 4) % IDEAS + IDEAS) % IDEAS;
+  if (i === 0) {
+    if (d.unidades > 0) {
+      return { titulo: 'Tu mercancía es plata', texto: 'Tus ' + d.unidades + ' unidades, vendidas a tu precio, son ' + pesos(d.venta) + '.' + (d.conCosto > 0 ? ' Las que tienen costo anotado te costaron ' + pesos(d.costo) + ': esa es la plata que tienes metida en mercancía.' : ' Si anotas en cuánto las compraste, sabrás cuánta plata tienes metida en mercancía.') };
+    }
+    return { titulo: 'Tu mercancía es plata', texto: 'Cada prenda en el almacén es plata que pagaste. Cargarla te dice cuánta plata tienes ahí.' };
+  }
+  if (i === 1) { return { titulo: 'Lo que no se vende es plata quieta', texto: 'Una prenda que no se vende en dos meses es plata que no trabaja. Ponla en tu estado, en promoción o al lado de lo que más se vende.' }; }
+  if (i === 2) {
+    if (d.ejemplo) { return { titulo: 'Cuánto ganas en cada prenda', texto: limpio(d.ejemplo.nombre) + ': te cuesta ' + pesos(d.ejemplo.costo) + ' y la vendes en ' + pesos(d.ejemplo.precio) + '. ' + margenTexto(d.ejemplo.precio, d.ejemplo.costo) }; }
+    return { titulo: 'Cuánto ganas en cada prenda', texto: 'Si una camiseta te cuesta $20.000 y la vendes en $35.000, ganas $15.000 en cada una. De cada $100 que vendes, te quedan $42,86.' };
+  }
+  if (i === 3) {
+    if (d.tallaTop) { return { titulo: 'La talla que más se vende', texto: 'La talla que más has vendido es la ' + d.tallaTop + '. Cuando vuelvas a surtir, pide más de esa talla.' }; }
+    return { titulo: 'La talla que más se vende', texto: 'Cuando vendas, la app te dirá qué talla sale más, para que surtas mejor.' };
+  }
+  return { titulo: 'Ganancia bruta y utilidad', texto: 'Ganancia bruta es lo que vendes menos lo que te costó lo que vendiste. Utilidad es lo que queda después de pagar arriendo, luz, agua y empleados. Si en el mes los gastos son más que la ganancia bruta, el negocio está perdiendo.' };
+}
+function semanaRacha(iso, racha) {
+  var a = iso.split('-').map(Number); var hoy = new Date(a[0], a[1] - 1, a[2]); var dow = (hoy.getDay() + 6) % 7;
+  var out = [];
+  for (var i = 0; i < 7; i++) { var d = new Date(hoy); d.setDate(hoy.getDate() - dow + i); var atras = dow - i; out.push({ letra: DIAS[d.getDay()], hecho: atras >= 0 && atras < racha, hoy: atras === 0 }); }
+  return out;
+}
+/*LOGICA-FIN*/
+var CLAVE = 'fiapp-prototipo-vitrina-v1';
+var FUENTE = '-apple-system, "Segoe UI", Roboto, Helvetica, Arial, "Apple Color Emoji", "Segoe UI Emoji", "Noto Color Emoji", sans-serif';
+var S = null;
+var temporizador = null;
+var archivoListo = null;
+var textoListo = '';
+var urlListo = '';
+function $(id) { return document.getElementById(id); }
+function esc(s) { return String(s).replace(/[&<>"']/g, function (c) { return { '&': '&amp;', '<': '&lt;', '>': '&gt;', '"': '&quot;', "'": '&#39;' }[c]; }); }
+function presetDe(seccion) { if (seccion === 'Gorras' || seccion === 'Accesorios') { return 'unica'; } if (seccion === 'Jeans' || seccion === 'Niños') { return 'numeros'; } if (seccion === 'Calzado') { return 'calzado'; } return 'ropa'; }
+function borradorNuevo(seccion, preset) { return { foto: null, seccion: seccion, preset: preset || presetDe(seccion), tallas: {} }; }
+function ponerSeccion(seccion) { var b = S.borrador; var p = presetDe(seccion); b.seccion = seccion; if (p !== b.preset) { b.preset = p; b.tallas = {}; } }
+function inicial() {
+  var hoy = isoDe(new Date());
+  return {
+    negocio: 'Mi Negocio', tel: '', secciones: ['Camisetas', 'Jeans', 'Vestidos'], meta: 5, seccionHoy: 'Camisetas',
+    racha: 0, cerroHoy: false, compartidaHoy: false, celebradaHoy: false, hora: '8:00 p. m.',
+    productos: [], ventas: [], carrito: [], hoy: hoy, pantalla: 'bienvenida', anterior: 'bienvenida',
+    filtroVitrina: '', filtroVender: '', seccionManana: null, borrador: borradorNuevo('Camisetas')
+  };
+}
+function guardar() { try { localStorage.setItem(CLAVE, JSON.stringify(S)); return true; } catch (e) { return false; } }
+function cargar() {
+  var x = null;
+  try { x = JSON.parse(localStorage.getItem(CLAVE) || 'null'); } catch (e) { x = null; }
+  if (!x || !x.productos) { return inicial(); }
+  var hoy = isoDe(new Date());
+  if (x.hoy !== hoy) {
+    x.hoy = hoy; x.cerroHoy = false; x.compartidaHoy = false; x.celebradaHoy = false; x.carrito = [];
+    if (x.seccionManana && x.secciones.indexOf(x.seccionManana) >= 0) { x.seccionHoy = x.seccionManana; }
+    x.seccionManana = null;
+  }
+  return x;
+}
+function aviso(texto) {
+  var a = $('aviso'); a.textContent = texto; a.hidden = false;
+  clearTimeout(temporizador); temporizador = setTimeout(function () { a.hidden = true; }, 3200);
+}
+function mostrar(p) {
+  var secs = document.querySelectorAll('[data-pantalla]');
+  for (var i = 0; i < secs.length; i++) { secs[i].hidden = secs[i].id !== 'p-' + p; }
+  S.pantalla = p; guardar(); window.scrollTo(0, 0);
+  if (p === 'bienvenida') { renderBienvenida(); } else if (p === 'inicio') { renderInicio(); } else if (p === 'cargar') { renderCargar(); }
+  else if (p === 'vitrina') { renderVitrina(); } else if (p === 'vender') { renderVender(); } else if (p === 'cierre') { renderCierre(); }
+}
+function productoPor(id) { for (var i = 0; i < S.productos.length; i++) { if (S.productos[i].id === id) { return S.productos[i]; } } return null; }
+function imagenProducto(p, clase) { return p.foto ? '<img class="' + (clase || '') + '" src="' + p.foto + '" alt="' + esc(p.nombre) + '">' : '<span>' + emojiDe(p.seccion) + '</span>'; }
+function abrirHoja(html) { $('hoja').innerHTML = '<div class="agarre"></div>' + html; $('hoja').hidden = false; $('velo').hidden = false; $('hoja').scrollTop = 0; }
+function cerrarHoja() { $('hoja').hidden = true; $('velo').hidden = true; }
+/* Bienvenida */
+function renderBienvenida() {
+  $('in-negocio').value = S.negocio === 'Mi Negocio' ? '' : S.negocio; $('in-tel').value = S.tel;
+  var todas = SECCIONES_BASE.slice(); S.secciones.forEach(function (s) { if (todas.indexOf(s) < 0) { todas.push(s); } });
+  $('bv-secciones').innerHTML = todas.map(function (s) { return '<button class="chip' + (S.secciones.indexOf(s) >= 0 ? ' sel' : '') + '" data-sec="' + esc(s) + '">' + emojiDe(s) + ' ' + esc(s) + '</button>'; }).join('');
+  $('bv-meta').innerHTML = [3, 5, 10].map(function (m) { return '<button class="chip' + (S.meta === m ? ' sel' : '') + '" data-meta="' + m + '">' + m + ' prendas</button>'; }).join('');
+}
+function alternarSeccion(s) {
+  var i = S.secciones.indexOf(s);
+  if (i >= 0) { if (S.secciones.length === 1) { aviso('Deja por lo menos una sección'); return; } S.secciones.splice(i, 1); } else { S.secciones.push(s); }
+  guardar(); renderBienvenida();
+}
+function empezar() {
+  S.negocio = limpio($('in-negocio').value) || 'Mi Negocio'; S.tel = String($('in-tel').value || '').replace(/\D/g, '');
+  if (S.productos.length === 0 || S.secciones.indexOf(S.seccionHoy) < 0) { S.seccionHoy = S.secciones[0]; }
+  ponerSeccion(S.seccionHoy);
+  mostrar('inicio');
+}
+/* Inicio */
+function renderInicio() {
+  $('ini-negocio').textContent = S.negocio; $('ini-racha').textContent = '🔥 ' + S.racha;
+  var m = progresoMision(S.productos, S.hoy, S.meta);
+  if (!m.cumplida) {
+    $('ini-mision').innerHTML = '<div class="tarjeta mision"><div class="mision-tit"><span>🎯 MISIÓN DE HOY</span><span>' + m.hechas + ' de ' + m.meta + '</span></div>' +
+      '<b class="mision-texto">' + m.meta + ' prendas de ' + esc(S.seccionHoy) + ' ' + emojiDe(S.seccionHoy) + '</b>' +
+      '<div class="barra"><span style="inline-size: ' + m.pct + '%;"></span></div>' +
+      '<div class="mision-sub">' + (m.hechas === 0 ? 'Unos ' + m.meta + ' minutos. Empieza por la que tengas más a la mano.' : '¡Vas bien! Te faltan ' + m.faltan + (m.faltan === 1 ? ' prenda' : ' prendas') + ', unos ' + m.faltan + ' minutos.') + '</div>' +
+      '<button class="btn prim grande" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+  } else {
+    $('ini-mision').innerHTML = '<div class="tarjeta mision"><div class="mision-tit"><span>✅ MISIÓN CUMPLIDA</span><span>' + m.hechas + ' de ' + m.meta + '</span></div>' +
+      '<b class="mision-texto">¡Cargaste ' + m.hechas + ' prendas hoy!</b><div class="barra"><span style="inline-size: 100%;"></span></div>' +
+      '<div class="mision-sub">Tu vitrina está lista para tu estado de WhatsApp.</div>' +
+      '<div class="pila"><button class="btn verde" data-a="compartir-vitrina">📲 Compartir mi vitrina</button><button class="btn sec" data-a="ir-cargar">Cargar más</button></div></div>';
+  }
+  var v = valorMercancia(S.productos);
+  $('ini-stats').innerHTML = '<div class="stat"><b>' + v.prendas + '</b><small>prendas</small></div><div class="stat"><b>' + v.unidades + '</b><small>unidades</small></div><div class="stat"><b>' + pesos(v.venta) + '</b><small>en mercancía</small></div>';
+  $('ini-secciones').innerHTML = conteoSecciones(S.productos, S.secciones).map(function (c) {
+    return '<button class="seccion-fila" data-sechoy="' + esc(c.seccion) + '"><span class="ico">' + emojiDe(c.seccion) + '</span><span class="mt"><b>' + esc(c.seccion) + '</b><br><small class="suave">' + (c.prendas === 1 ? '1 prenda' : c.prendas + ' prendas') + '</small></span>' + (c.seccion === S.seccionHoy ? '<span class="hoy">MISIÓN DE HOY</span>' : '') + '</button>';
+  }).join('');
+  $('ini-cierre').textContent = S.cerroHoy ? '✅ Día cerrado · ver resumen' : '🌙 Cerrar el día';
+}
+/* Cargar */
+function renderFotoCargar() {
+  var b = S.borrador;
+  $('car-foto').innerHTML = b.foto ?
+    '<div class="foto-prev"><img src="' + b.foto + '" alt="Foto de la prenda"><div class="foto-acc"><label class="btn gris" for="in-camara">📷 Otra foto</label><label class="btn gris" for="in-galeria">🖼️ De la galería</label></div></div>' :
+    '<div class="foto-vacia"><div class="foto-ico">📷</div><label class="btn prim" for="in-camara">Tomar foto</label><label class="btn sec" for="in-galeria">Elegir de la galería</label></div>';
+}
+function renderTallasCargar() {
+  var b = S.borrador;
+  $('car-presets').innerHTML = Object.keys(TALLAS).map(function (k) { return '<button data-preset="' + k + '" class="' + (b.preset === k ? 'sel' : '') + '">' + NOMBRE_TALLAS[k] + '</button>'; }).join('');
+  $('car-tallas').innerHTML = TALLAS[b.preset].map(function (t) { var n = b.tallas[t] || 0; return '<div class="talla-fila"><span class="talla">' + esc(t) + '</span><button class="paso" data-menos="' + esc(t) + '" aria-label="Una menos de ' + esc(t) + '">−</button><span class="cant">' + n + '</span><button class="paso" data-mas="' + esc(t) + '" aria-label="Una más de ' + esc(t) + '">+</button></div>'; }).join('');
+  var total = TALLAS[b.preset].reduce(function (s, t) { return s + (b.tallas[t] || 0); }, 0);
+  $('car-total').textContent = total === 0 ? 'Toca + en cada talla que tengas.' : 'Total: ' + (total === 1 ? '1 unidad' : total + ' unidades');
+}
+function renderTextosCargar() {
+  var precio = parseInt($('car-precio').value, 10); var costo = parseInt($('car-costo').value, 10);
+  $('car-precio-txt').textContent = precio > 0 ? 'En tu vitrina se verá: ' + pesos(precio) : '';
+  $('car-margen').textContent = margenTexto(precio, costo);
+}
+function renderCargar() {
+  var m = progresoMision(S.productos, S.hoy, S.meta);
+  $('car-progreso').textContent = m.hechas + '/' + m.meta;
+  if (S.secciones.indexOf(S.borrador.seccion) < 0) { ponerSeccion(S.seccionHoy); }
+  $('car-secciones').innerHTML = S.secciones.map(function (s) { return '<button class="chip' + (S.borrador.seccion === s ? ' sel' : '') + '" data-carsec="' + esc(s) + '">' + emojiDe(s) + ' ' + esc(s) + '</button>'; }).join('');
+  renderFotoCargar(); renderTallasCargar(); renderTextosCargar();
+}
+function leerFoto(archivo) {
+  return new Promise(function (resolver, fallar) {
+    var url = URL.createObjectURL(archivo); var img = new Image();
+    img.addEventListener('load', function () {
+      var max = 720; var w = img.naturalWidth; var h = img.naturalHeight; var k = Math.min(1, max / Math.max(w, h));
+      var c = document.createElement('canvas'); c.width = Math.round(w * k); c.height = Math.round(h * k);
+      c.getContext('2d').drawImage(img, 0, 0, c.width, c.height); URL.revokeObjectURL(url);
+      resolver(c.toDataURL('image/jpeg', 0.7));
+    });
+    img.addEventListener('error', function () { URL.revokeObjectURL(url); fallar(new Error('foto')); });
+    img.src = url;
+  });
+}
+function guardarPrenda(otra) {
+  var b = S.borrador;
+  var precio = parseInt($('car-precio').value, 10); var costo = parseInt($('car-costo').value, 10);
+  if (!(precio > 0)) { aviso('Escribe en cuánto la vendes'); return; }
+  var antes = progresoMision(S.productos, S.hoy, S.meta).cumplida;
+  var n = S.productos.filter(function (p) { return p.seccion === b.seccion; }).length + 1;
+  var nombre = limpio($('car-nombre').value) || b.seccion + ' ' + n;
+  var p = { id: 'p' + Date.now() + Math.floor(Math.random() * 1000), nombre: nombre, seccion: b.seccion, precio: precio, costo: costo > 0 ? costo : null,
+    tallas: TALLAS[b.preset].map(function (t) { return { t: t, n: b.tallas[t] || 0 }; }), foto: b.foto, creado: S.hoy };
+  S.productos.unshift(p);
+  S.borrador = borradorNuevo(b.seccion, b.preset);
+  var sinEspacio = false;
+  if (!guardar()) { p.foto = null; sinEspacio = true; guardar(); }
+  $('car-nombre').value = ''; $('car-precio').value = ''; $('car-costo').value = '';
+  var m = progresoMision(S.productos, S.hoy, S.meta);
+  if (!antes && m.cumplida && !S.celebradaHoy) {
+    S.celebradaHoy = true; guardar(); renderCargar(); hojaCelebracion(); return;
+  }
+  aviso((sinEspacio ? 'Guardada sin foto: el celular no tiene más espacio en esta prueba. ' : 'Guardada: ' + nombre + ' · ') + m.hechas + ' de ' + m.meta + ' hoy');
+  if (otra) { renderCargar(); window.scrollTo(0, 0); } else { mostrar('inicio'); }
+}
+function hojaCelebracion() {
+  var v = valorMercancia(S.productos);
+  abrirHoja('<div class="fiesta">🎉</div><h3>¡Misión cumplida!</h3><p class="centro">Cargaste ' + S.meta + ' prendas hoy. Ya tienes <b>' + v.prendas + ' prendas</b> en tu vitrina: <b>' + pesos(v.venta) + '</b> en mercancía.</p>' +
+    '<div class="pila"><button class="btn verde" data-a="ir-vitrina">Ver mi vitrina</button><button class="btn gris" data-a="seguir-cargando">Seguir cargando</button></div>');
+}
+/* Vitrina */
+function filtrar(lista, sec) { return sec ? lista.filter(function (p) { return p.seccion === sec; }) : lista; }
+function chipsFiltro(attr, actual) {
+  var usadas = S.secciones.filter(function (s) { return S.productos.some(function (p) { return p.seccion === s; }); });
+  if (usadas.length < 2) { return ''; }
+  return '<div class="chips"><button class="chip' + (actual ? '' : ' sel') + '" data-' + attr + '="">Todas</button>' + usadas.map(function (s) { return '<button class="chip' + (actual === s ? ' sel' : '') + '" data-' + attr + '="' + esc(s) + '">' + emojiDe(s) + ' ' + esc(s) + '</button>'; }).join('') + '</div>';
+}
+function tarjetaPrenda(p, attr) {
+  var u = unidadesDe(p);
+  return '<button class="prenda' + (u === 0 ? ' agotada' : '') + '" data-' + attr + '="' + p.id + '"><span class="foto">' + imagenProducto(p) + '</span><span class="info"><b>' + esc(p.nombre) + '</b><span class="precio">' + pesos(p.precio) + '</span><small>' + textoTallas(p) + '</small></span></button>';
+}
+function renderVitrina() {
+  if (S.productos.length === 0) {
+    $('vit-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🖼️</div><p>Todavía no hay prendas en tu vitrina.<br>Carga la primera con una foto.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+    return;
+  }
+  var v = valorMercancia(S.productos);
+  $('vit-cont').innerHTML = '<div class="tarjeta"><b>' + v.prendas + ' prendas · ' + v.unidades + ' unidades</b><p class="chica suave" style="margin-block: 4px 10px;">Vendidas a tu precio son ' + pesos(v.venta) + '.</p>' +
+    '<div class="pila"><button class="btn verde" data-a="compartir-vitrina">📲 Compartir en mi estado</button><button class="btn sec" data-a="lista-cliente">💬 Enviar la lista a un cliente</button></div></div>' +
+    chipsFiltro('filtrovit', S.filtroVitrina) + '<div class="grilla">' + filtrar(S.productos, S.filtroVitrina).map(function (p) { return tarjetaPrenda(p, 'prenda'); }).join('') + '</div>';
+}
+function hojaPrenda(id) {
+  var p = productoPor(id); if (!p) { return; }
+  var tallas = p.tallas.map(function (t) { return '<span class="' + (t.n === 0 ? 'cero' : '') + '">' + esc(t.t) + ' · ' + t.n + '</span>'; }).join('');
+  var u = unidadesDe(p);
+  abrirHoja((p.foto ? '<img class="hoja-foto" src="' + p.foto + '" alt="' + esc(p.nombre) + '">' : '<div class="hoja-emoji">' + emojiDe(p.seccion) + '</div>') +
+    '<h3>' + esc(p.nombre) + '</h3><span class="grande">' + pesos(p.precio) + '</span><div class="tallas-lista">' + tallas + '</div>' +
+    (p.costo ? '<p class="chica verde-t" style="margin-block: 0 10px;">' + esc(margenTexto(p.precio, p.costo)) + '</p>' : '<p class="chica suave" style="margin-block: 0 10px;">Sin costo anotado: no sabemos cuánto le ganas.</p>') +
+    '<div class="pila">' + (u > 0 ? '<button class="btn verde" data-compartirp="' + p.id + '">📲 Compartir esta prenda</button><button class="btn sec" data-venderdesde="' + p.id + '">🛍️ Vender</button>' : '<p class="centro rojo-t">Agotada</p>') +
+    '<button class="btn gris" data-a="cerrar-hoja">Cerrar</button></div>');
+}
+/* Imagenes para compartir */
+function cargarImagen(src) {
+  return new Promise(function (resolver) {
+    if (!src) { resolver(null); return; }
+    var im = new Image(); im.addEventListener('load', function () { resolver(im); }); im.addEventListener('error', function () { resolver(null); }); im.src = src;
+  });
+}
+function caja(x, X, Y, W, H, r) { x.beginPath(); x.moveTo(X + r, Y); x.arcTo(X + W, Y, X + W, Y + H, r); x.arcTo(X + W, Y + H, X, Y + H, r); x.arcTo(X, Y + H, X, Y, r); x.arcTo(X, Y, X + W, Y, r); x.closePath(); }
+function cubrir(x, img, X, Y, W, H) { var k = Math.max(W / img.width, H / img.height); var sw = W / k; var sh = H / k; x.drawImage(img, (img.width - sw) / 2, (img.height - sh) / 2, sw, sh, X, Y, W, H); }
+function cortar(x, t, maxw) { if (x.measureText(t).width <= maxw) { return t; } while (t.length > 1 && x.measureText(t + '…').width > maxw) { t = t.slice(0, -1); } return t + '…'; }
+function sinFoto(x, p, X, Y, W, H) { x.fillStyle = '#eef0f3'; x.fillRect(X, Y, W, H); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = Math.round(H * 0.5) + 'px ' + FUENTE; x.fillText(emojiDe(p.seccion), X + W / 2, Y + H / 2); x.textBaseline = 'alphabetic'; }
+function pie(x) {
+  x.fillStyle = '#0043bb'; x.fillRect(0, 1720, 1080, 200); x.fillStyle = '#ffffff'; x.textAlign = 'center';
+  x.font = '800 48px ' + FUENTE; x.fillText(telefonoBonito(S.tel) ? 'Pídelo por WhatsApp: ' + telefonoBonito(S.tel) : 'Pídelo por WhatsApp', 540, 1810);
+  x.font = '400 28px ' + FUENTE; x.fillText('Hecho con FiApp', 540, 1872);
+}
+function dibujarVitrina(productos) {
+  var lista = productos.filter(function (p) { return unidadesDe(p) > 0; }).slice(0, 6);
+  return Promise.all(lista.map(function (p) { return cargarImagen(p.foto); })).then(function (imgs) {
+    var c = document.createElement('canvas'); c.width = 1080; c.height = 1920; var x = c.getContext('2d');
+    x.fillStyle = '#f6f1ea'; x.fillRect(0, 0, 1080, 1920);
+    x.fillStyle = '#0043bb'; x.fillRect(0, 0, 1080, 290); x.fillStyle = '#ffffff'; x.textAlign = 'center';
+    x.font = '800 74px ' + FUENTE; x.fillText(cortar(x, limpio(S.negocio), 1000), 540, 150);
+    x.font = '600 44px ' + FUENTE; x.fillText('🛍️ Lo nuevo en mi vitrina', 540, 230);
+    var filas = lista.length <= 2 ? 1 : (lista.length <= 4 ? 2 : 3); var cols = lista.length === 1 ? 1 : 2;
+    var H = Math.floor((1380 - (filas - 1) * 30) / filas); var W = cols === 1 ? 700 : 490;
+    lista.forEach(function (p, i) {
+      var col = i % cols; var fila = Math.floor(i / cols);
+      var X = cols === 1 ? 190 : (col === 0 ? 33 : 557); var Y = 320 + fila * (H + 30); var foto = H - 150;
+      x.save(); caja(x, X, Y, W, H, 28); x.fillStyle = '#ffffff'; x.fill(); x.clip();
+      if (imgs[i]) { cubrir(x, imgs[i], X, Y, W, foto); } else { sinFoto(x, p, X, Y, W, foto); }
+      x.restore();
+      x.textAlign = 'start'; x.fillStyle = '#1f2937'; x.font = '700 36px ' + FUENTE; x.fillText(cortar(x, limpio(p.nombre), W - 40), X + 20, Y + foto + 50);
+      x.fillStyle = '#0043bb'; x.font = '800 50px ' + FUENTE; x.fillText(pesos(p.precio), X + 20, Y + foto + 104);
+      x.fillStyle = '#6b7280'; x.font = '600 30px ' + FUENTE; x.fillText(cortar(x, 'Tallas: ' + tallasDisponibles(p).join(' · '), W - 40), X + 20, Y + foto + 140);
+    });
+    pie(x); return c;
+  });
+}
+function dibujarPrenda(p) {
+  return cargarImagen(p.foto).then(function (img) {
+    var c = document.createElement('canvas'); c.width = 1080; c.height = 1920; var x = c.getContext('2d');
+    x.fillStyle = '#ffffff'; x.fillRect(0, 0, 1080, 1920);
+    if (img) { cubrir(x, img, 0, 0, 1080, 1180); } else { sinFoto(x, p, 0, 0, 1080, 1180); }
+    x.textAlign = 'center'; x.fillStyle = '#1f2937'; x.font = '800 64px ' + FUENTE; x.fillText(cortar(x, limpio(p.nombre), 1000), 540, 1300);
+    x.fillStyle = '#0043bb'; x.font = '800 120px ' + FUENTE; x.fillText(pesos(p.precio), 540, 1450);
+    x.fillStyle = '#4b5563'; x.font = '600 48px ' + FUENTE; x.fillText(cortar(x, 'Tallas: ' + tallasDisponibles(p).join(' · '), 1000), 540, 1540);
+    x.fillStyle = '#6b7280'; x.font = '600 40px ' + FUENTE; x.fillText(cortar(x, limpio(S.negocio), 1000), 540, 1640);
+    pie(x); return c;
+  });
+}
+function prepararImagen(promesa, nombreArchivo) {
+  aviso('Armando tu imagen…');
+  promesa.then(function (c) {
+    urlListo = c.toDataURL('image/png'); textoListo = textoCompartir(S.negocio, S.tel); archivoListo = null;
+    c.toBlob(function (blob) {
+      try { archivoListo = blob ? new File([blob], nombreArchivo, { type: 'image/png' }) : null; } catch (e) { archivoListo = null; }
+      var puede = !!(archivoListo && navigator.canShare && navigator.canShare({ files: [archivoListo] }));
+      abrirHoja('<h3>Tu imagen está lista</h3><img class="previa" src="' + urlListo + '" alt="Vista previa de la imagen para el estado">' +
+        '<div class="pila">' + (puede ? '<button class="btn verde" data-a="compartir-ahora">Compartir → WhatsApp → Mi estado</button>' : '') +
+        '<button class="btn sec" data-a="guardar-imagen">Guardar la imagen</button><button class="btn gris" data-a="cerrar-hoja">Cerrar</button></div>' +
+        '<p class="chica suave">' + (puede ? 'En la lista escoge WhatsApp y después «Mi estado».' : 'Mantén presionada la imagen y toca «Guardar»; después súbela a tu estado de WhatsApp.') + '</p>');
+    }, 'image/png');
+  }).catch(function () { aviso('No se pudo armar la imagen'); });
+}
+function compartirAhora() {
+  if (!archivoListo || !navigator.share) { return; }
+  navigator.share({ files: [archivoListo], text: textoListo }).then(function () { S.compartidaHoy = true; guardar(); cerrarHoja(); aviso('¡Listo! Tu vitrina salió para WhatsApp'); }).catch(function () { return null; });
+}
+function guardarImagen() {
+  var a = document.createElement('a'); a.href = urlListo; a.download = 'mi-vitrina.png'; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  S.compartidaHoy = true; guardar(); aviso('Si no se guardó, mantén presionada la imagen y toca «Guardar»');
+}
+function abrirWhatsApp(texto, tel) {
+  var d = String(tel || '').replace(/\D/g, '');
+  window.open((d.length === 10 ? 'https://wa.me/57' + d : 'https://wa.me/') + '?text=' + encodeURIComponent(texto), '_blank');
+}
+/* Vender */
+function enCarrito(pid, talla) { return S.carrito.filter(function (c) { return c.pid === pid && c.talla === talla; }).length; }
+function totalCarrito() { return S.carrito.reduce(function (s, c) { var p = productoPor(c.pid); return s + (p ? p.precio : 0); }, 0); }
+function renderCarrito() {
+  var b = $('ven-carrito'); var n = S.carrito.length;
+  b.hidden = n === 0; $('ven-cont').className = 'cont' + (n > 0 ? ' con-carrito' : '');
+  b.innerHTML = n === 0 ? '' : '<span>🛒 ' + (n === 1 ? '1 prenda' : n + ' prendas') + ' · ' + pesos(totalCarrito()) + '</span><button class="btn verde" data-a="cobrar-vitrina">Cobrar</button>';
+}
+function renderVender() {
+  if (S.productos.length === 0) {
+    $('ven-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🛍️</div><p>Para vender tocando la foto, primero carga tus prendas.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+  } else {
+    $('ven-cont').innerHTML = '<p class="chica suave" style="margin-block: 0 8px;">Toca la prenda que te compraron y escoge la talla.</p>' + chipsFiltro('filtroven', S.filtroVender) +
+      '<div class="grilla">' + filtrar(S.productos, S.filtroVender).map(function (p) { return tarjetaPrenda(p, 'vender'); }).join('') + '</div>';
+  }
+  renderCarrito();
+}
+function hojaTallas(id) {
+  var p = productoPor(id); if (!p) { return; }
+  var disp = p.tallas.filter(function (t) { return t.n - enCarrito(p.id, t.t) > 0; });
+  if (disp.length === 0) { aviso(unidadesDe(p) === 0 ? 'Esa prenda está agotada' : 'Ya tienes en el carrito todas las que quedan'); return; }
+  abrirHoja('<h3>' + esc(p.nombre) + '</h3><p class="centro suave" style="margin-block: 2px 0;">' + pesos(p.precio) + ' · ¿Qué talla?</p><div class="tallas-venta">' +
+    disp.map(function (t) { var q = t.n - enCarrito(p.id, t.t); return '<button class="talla-btn" data-addtalla="' + p.id + '|' + esc(t.t) + '"><b>' + esc(t.t) + '</b><small>' + (q === 1 ? 'queda 1' : 'quedan ' + q) + '</small></button>'; }).join('') +
+    '</div><button class="btn gris" data-a="cerrar-hoja">Cancelar</button>');
+}
+function agregarAlCarrito(valor) {
+  var i = valor.indexOf('|'); var pid = valor.slice(0, i); var talla = valor.slice(i + 1); var p = productoPor(pid);
+  if (!p) { return; }
+  var t = p.tallas.filter(function (x) { return x.t === talla; })[0];
+  if (!t || t.n - enCarrito(pid, talla) <= 0) { aviso('No quedan más en talla ' + talla); return; }
+  S.carrito.push({ pid: pid, talla: talla }); guardar(); cerrarHoja(); renderCarrito(); aviso('Agregada: ' + p.nombre + ' talla ' + talla);
+}
+function hojaCobrar() {
+  if (S.carrito.length === 0) { return; }
+  var filas = S.carrito.map(function (c, i) { var p = productoPor(c.pid); return '<div class="item-c"><span class="mt"><b>' + esc(p.nombre) + '</b><small>Talla ' + esc(c.talla) + '</small></span><b>' + pesos(p.precio) + '</b><button class="x" data-quitarc="' + i + '" aria-label="Quitar">✕</button></div>'; }).join('');
+  abrirHoja('<h3>Cobrar</h3><span class="grande">' + pesos(totalCarrito()) + '</span>' + filas +
+    '<div class="pila" style="margin-block-start: 12px;"><button class="pago" data-a="venta-efectivo"><span class="ico">💵</span><span>Efectivo<small>Entra a la caja</small></span></button>' +
+    '<button class="pago" data-a="venta-digital"><span class="ico">📱</span><span>Nequi, Daviplata o transferencia<small>No entra a la gaveta</small></span></button><button class="btn gris" data-a="cerrar-hoja">Seguir vendiendo</button></div>');
+}
+function registrarVenta(pago) {
+  var items = []; var vistos = {}; var acabadas = []; var pocas = [];
+  S.carrito.forEach(function (c) {
+    var p = productoPor(c.pid); var q = p ? quitarUna(p, c.talla) : null;
+    if (!q) { return; }
+    p.tallas = q.tallas; items.push({ pid: p.id, nombre: p.nombre, talla: c.talla, precio: p.precio, costo: p.costo }); vistos[p.id + '|' + c.talla] = { p: p, talla: c.talla };
+  });
+  Object.keys(vistos).forEach(function (k) {
+    var v = vistos[k]; var queda = v.p.tallas.filter(function (t) { return t.t === v.talla; })[0].n;
+    if (queda === 0) { acabadas.push('Se acabó ' + v.p.nombre + ' talla ' + v.talla); } else if (queda === 1) { pocas.push('Te queda 1 ' + v.p.nombre + ' talla ' + v.talla); }
+  });
+  var bajos = acabadas.concat(pocas);
+  var total = items.reduce(function (s, it) { return s + it.precio; }, 0);
+  S.ventas.push({ fecha: S.hoy, pago: pago, items: items }); S.carrito = []; guardar(); cerrarHoja(); renderVender();
+  aviso('Venta de ' + pesos(total) + ' guardada' + (bajos.length ? ' · ' + bajos[0] : ''));
+}
+/* Cierre */
+function datosLeccion() {
+  var v = valorMercancia(S.productos);
+  var ej = S.productos.filter(function (p) { return p.costo && p.precio > p.costo; })[0] || null;
+  v.ejemplo = ej; v.tallaTop = tallaMasVendida(S.ventas); return v;
+}
+function leccionHtml() { var l = leccionVitrina(S.racha, datosLeccion()); return '<div class="tarjeta leccion"><span class="tag">💡 IDEA DEL DÍA</span><b>' + esc(l.titulo) + '</b><p>' + esc(l.texto) + '</p></div>'; }
+function renderCierre() {
+  var r = resumenVentasDia(S.ventas, S.hoy); var m = progresoMision(S.productos, S.hoy, S.meta);
+  if (!S.cerroHoy) {
+    $('cierre-cont').innerHTML = '<div class="tarjeta"><b>Hoy, ' + fechaCorta(S.hoy) + '</b>' +
+      '<div class="fila-dato"><span>🛍️ Ventas (' + r.n + ')</span><b>' + pesos(r.total) + '</b></div>' +
+      '<div class="fila-dato"><span>💵 En efectivo</span><b>' + pesos(r.efectivo) + '</b></div>' +
+      '<div class="fila-dato"><span>📱 Nequi o transferencia</span><b>' + pesos(r.digital) + '</b></div>' +
+      '<div class="fila-dato"><span>👕 Prendas vendidas</span><b>' + r.unidades + '</b></div>' +
+      '<div class="fila-dato"><span>Ganancia bruta<br><small class="suave">de las que tienen costo, antes de gastos</small></span><b class="verde-t">' + pesos(r.exacta) + '</b></div>' +
+      (r.sinCosto > 0 ? '<p class="chica suave" style="margin-block: 6px 0;">' + (r.sinCosto === 1 ? '1 prenda vendida no tiene' : r.sinCosto + ' prendas vendidas no tienen') + ' costo anotado. Anota en cuánto las compraste para saber cuánto ganas.</p>' : '') +
+      '<details class="que"><summary>¿Qué es la ganancia bruta?</summary>Es lo que vendiste menos lo que te costó lo que vendiste. Todavía no le has restado el arriendo, la luz ni tu sueldo: lo que queda después de eso es la utilidad.</details></div>' +
+      '<div class="tarjeta"><div class="fila-dato"><span>📷 Prendas cargadas hoy</span><b>' + m.hechas + ' de ' + m.meta + '</b></div><div class="fila-dato total"><span>📲 Vitrina compartida hoy</span><b>' + (S.compartidaHoy ? 'Sí' : 'Todavía no') + '</b></div></div>' +
+      '<button class="btn prim grande" data-a="cerrar-dia">Cerrar el día</button><p class="centro chica suave">Llevas ' + S.racha + (S.racha === 1 ? ' día seguido.' : ' días seguidos.') + '</p>';
+    return;
+  }
+  var sem = semanaRacha(S.hoy, S.racha).map(function (d) { return '<span class="dia' + (d.hecho ? ' hecho' : '') + (d.hoy ? ' hoy' : '') + '"><i>' + (d.hecho ? '🔥' : '·') + '</i>' + d.letra + '</span>'; }).join('');
+  var manana = S.seccionManana || seccionSiguiente(S.secciones, S.seccionHoy);
+  var horas = ['6:00 p. m.', '7:00 p. m.', '8:00 p. m.', '9:00 p. m.'].map(function (h) { return '<button class="hora' + (S.hora === h ? ' sel' : '') + '" data-h="' + h + '">' + h + '</button>'; }).join('');
+  $('cierre-cont').innerHTML = '<div class="tarjeta centro"><div class="fuego">🔥</div><b style="font-size: 22px;">¡' + S.racha + (S.racha === 1 ? ' día! Empezaste tu racha.' : ' días seguidos!') + '</b><div class="semana">' + sem + '</div><p class="chica suave" style="margin: 0;">Un día libre a la semana no rompe tu racha.</p></div>' +
+    leccionHtml() +
+    '<div class="tarjeta"><b>¿A qué hora te recuerdo tu misión?</b><div class="horas">' + horas + '</div>' +
+    '<div class="bloqueo"><div class="reloj">' + esc(S.hora.replace(' p. m.', '')) + '</div><div class="notif"><span class="logo">F</span><span><b>FiApp · ahora</b><p>Llevas ' + S.racha + (S.racha === 1 ? ' día' : ' días') + ' seguidos 🔥 Mañana toca ' + esc(manana) + ': ' + S.meta + ' prendas y tu vitrina queda lista.</p></span></div></div>' +
+    '<p class="chica suave" style="margin-block: 8px 0;">Un solo aviso al día. Si no lo usas tres días seguidos, te aviso solo una vez por semana.</p></div>' +
+    '<button class="btn gris" data-a="ir-inicio">Volver al Inicio</button>';
+}
+/* Ejemplo para mostrar */
+function fotoEjemplo(emoji, color) {
+  var c = document.createElement('canvas'); c.width = 600; c.height = 600; var x = c.getContext('2d');
+  x.fillStyle = color; x.fillRect(0, 0, 600, 600); x.textAlign = 'center'; x.textBaseline = 'middle'; x.font = '330px ' + FUENTE; x.fillText(emoji, 300, 320);
+  return c.toDataURL('image/jpeg', 0.8);
+}
+function cargarEjemplo() {
+  var hoy = S.hoy; var neg = limpio($('in-negocio').value); var tel = String($('in-tel').value || '').replace(/\D/g, '');
+  var t = function (preset, cant) { return TALLAS[preset].map(function (x, i) { return { t: x, n: cant[i] || 0 }; }); };
+  S.negocio = neg || 'Almacén de ejemplo'; S.tel = tel || '3001234567';
+  S.secciones = ['Camisetas', 'Jeans', 'Vestidos', 'Gorras']; S.seccionHoy = 'Camisetas'; S.racha = 3; S.cerroHoy = false; S.compartidaHoy = false; S.celebradaHoy = false;
+  S.productos = [
+    { id: 'e1', nombre: 'Camiseta básica blanca', seccion: 'Camisetas', precio: 25000, costo: 14000, tallas: t('ropa', [0, 2, 4, 3, 0, 0]), foto: fotoEjemplo('👕', '#e5e7eb'), creado: hoy },
+    { id: 'e2', nombre: 'Gorra NY negra', seccion: 'Gorras', precio: 35000, costo: 18000, tallas: t('unica', [6]), foto: fotoEjemplo('🧢', '#d1d5db'), creado: hoy },
+    { id: 'e3', nombre: 'Vestido floral', seccion: 'Vestidos', precio: 65000, costo: null, tallas: t('ropa', [0, 1, 1, 0, 0, 0]), foto: fotoEjemplo('👗', '#fbcfe8'), creado: diasAntes(hoy, 1) },
+    { id: 'e4', nombre: 'Jean clásico azul', seccion: 'Jeans', precio: 85000, costo: 52000, tallas: t('numeros', [0, 1, 2, 2, 1, 0, 0]), foto: fotoEjemplo('👖', '#bfdbfe'), creado: diasAntes(hoy, 2) },
+    { id: 'e5', nombre: 'Camiseta Colombia', seccion: 'Camisetas', precio: 45000, costo: 28000, tallas: t('ropa', [0, 1, 2, 2, 1, 0]), foto: fotoEjemplo('👕', '#fde68a'), creado: diasAntes(hoy, 3) },
+    { id: 'e6', nombre: 'Gorra Colombia amarilla', seccion: 'Gorras', precio: 30000, costo: 15000, tallas: t('unica', [0]), foto: fotoEjemplo('🧢', '#fef08a'), creado: diasAntes(hoy, 3) }
+  ];
+  S.ventas = [{ fecha: hoy, pago: 'efectivo', items: [{ pid: 'e5', nombre: 'Camiseta Colombia', talla: 'M', precio: 45000, costo: 28000 }] }];
+  S.carrito = []; S.borrador = borradorNuevo('Camisetas');
+  if (!guardar()) { aviso('El celular no tiene espacio para el ejemplo'); }
+  mostrar('inicio');
+}
+/* Acciones */
+function accion(a) {
+  if (a === 'empezar') { empezar(); }
+  else if (a === 'ejemplo') { cargarEjemplo(); }
+  else if (a === 'agregar-seccion') { var s = limpio($('in-otra').value); if (!s) { aviso('Escribe el nombre de la sección'); return; } if (S.secciones.indexOf(s) < 0) { S.secciones.push(s); } $('in-otra').value = ''; guardar(); renderBienvenida(); }
+  else if (a === 'ir-inicio') { cerrarHoja(); mostrar('inicio'); }
+  else if (a === 'ir-cargar') { cerrarHoja(); ponerSeccion(S.seccionHoy); mostrar('cargar'); }
+  else if (a === 'ir-vitrina') { cerrarHoja(); mostrar('vitrina'); }
+  else if (a === 'ir-vender') { mostrar('vender'); }
+  else if (a === 'ir-cierre') { mostrar('cierre'); }
+  else if (a === 'ir-guia') { S.anterior = S.pantalla; mostrar('guia'); }
+  else if (a === 'volver-guia') { mostrar(S.anterior && S.anterior !== 'guia' ? S.anterior : 'bienvenida'); }
+  else if (a === 'reiniciar') { abrirHoja('<h3>¿Empezar de nuevo?</h3><p class="centro suave">Se borran las prendas, las fotos y las ventas de prueba de este celular.</p><div class="pila"><button class="btn rojo" data-a="reiniciar-si">Sí, empezar de nuevo</button><button class="btn gris" data-a="cerrar-hoja">Cancelar</button></div>'); }
+  else if (a === 'reiniciar-si') { try { localStorage.removeItem(CLAVE); } catch (e) { S = null; } S = inicial(); cerrarHoja(); mostrar('bienvenida'); }
+  else if (a === 'cerrar-hoja') { cerrarHoja(); }
+  else if (a === 'guardar-otra') { guardarPrenda(true); }
+  else if (a === 'guardar-prenda') { guardarPrenda(false); }
+  else if (a === 'seguir-cargando') { cerrarHoja(); mostrar('cargar'); }
+  else if (a === 'compartir-vitrina') { if (S.productos.filter(function (p) { return unidadesDe(p) > 0; }).length === 0) { aviso('Carga primero una prenda con unidades'); return; } prepararImagen(dibujarVitrina(S.productos), 'mi-vitrina.png'); }
+  else if (a === 'compartir-ahora') { compartirAhora(); }
+  else if (a === 'guardar-imagen') { guardarImagen(); }
+  else if (a === 'lista-cliente') { S.compartidaHoy = true; guardar(); abrirWhatsApp(textoListaCliente(S.negocio, S.productos), ''); }
+  else if (a === 'cobrar-vitrina') { hojaCobrar(); }
+  else if (a === 'venta-efectivo') { registrarVenta('efectivo'); }
+  else if (a === 'venta-digital') { registrarVenta('digital'); }
+  else if (a === 'cerrar-dia') { if (!S.cerroHoy) { S.cerroHoy = true; S.racha += 1; S.seccionManana = seccionSiguiente(S.secciones, S.seccionHoy); guardar(); } renderCierre(); window.scrollTo(0, 0); }
+}
+document.addEventListener('click', function (e) {
+  var el = e.target.closest('[data-a],[data-sec],[data-meta],[data-sechoy],[data-carsec],[data-preset],[data-menos],[data-mas],[data-prenda],[data-vender],[data-addtalla],[data-quitarc],[data-filtrovit],[data-filtroven],[data-h],[data-compartirp],[data-venderdesde]');
+  if (!el) { return; }
+  var g = function (n) { return el.getAttribute(n); };
+  if (el.hasAttribute('data-sec')) { alternarSeccion(g('data-sec')); }
+  else if (el.hasAttribute('data-meta')) { S.meta = parseInt(g('data-meta'), 10); guardar(); renderBienvenida(); }
+  else if (el.hasAttribute('data-sechoy')) { S.seccionHoy = g('data-sechoy'); ponerSeccion(S.seccionHoy); guardar(); renderInicio(); aviso('Misión de hoy: ' + S.seccionHoy); }
+  else if (el.hasAttribute('data-carsec')) { ponerSeccion(g('data-carsec')); guardar(); renderCargar(); }
+  else if (el.hasAttribute('data-preset')) { S.borrador.preset = g('data-preset'); S.borrador.tallas = {}; guardar(); renderTallasCargar(); }
+  else if (el.hasAttribute('data-mas')) { var t1 = g('data-mas'); S.borrador.tallas[t1] = (S.borrador.tallas[t1] || 0) + 1; guardar(); renderTallasCargar(); }
+  else if (el.hasAttribute('data-menos')) { var t2 = g('data-menos'); S.borrador.tallas[t2] = Math.max(0, (S.borrador.tallas[t2] || 0) - 1); guardar(); renderTallasCargar(); }
+  else if (el.hasAttribute('data-prenda')) { hojaPrenda(g('data-prenda')); }
+  else if (el.hasAttribute('data-vender')) { hojaTallas(g('data-vender')); }
+  else if (el.hasAttribute('data-venderdesde')) { var id = g('data-venderdesde'); cerrarHoja(); mostrar('vender'); hojaTallas(id); }
+  else if (el.hasAttribute('data-compartirp')) { var p = productoPor(g('data-compartirp')); if (p) { prepararImagen(dibujarPrenda(p), 'prenda.png'); } }
+  else if (el.hasAttribute('data-addtalla')) { agregarAlCarrito(g('data-addtalla')); }
+  else if (el.hasAttribute('data-quitarc')) { S.carrito.splice(parseInt(g('data-quitarc'), 10), 1); guardar(); renderCarrito(); if (S.carrito.length) { hojaCobrar(); } else { cerrarHoja(); } }
+  else if (el.hasAttribute('data-filtrovit')) { S.filtroVitrina = g('data-filtrovit'); guardar(); renderVitrina(); }
+  else if (el.hasAttribute('data-filtroven')) { S.filtroVender = g('data-filtroven'); guardar(); renderVender(); }
+  else if (el.hasAttribute('data-h')) { S.hora = g('data-h'); guardar(); renderCierre(); }
+  else { accion(g('data-a')); }
+});
+document.addEventListener('input', function (e) {
+  if (!e.target) { return; }
+  if (e.target.id === 'car-precio' || e.target.id === 'car-costo') { renderTextosCargar(); }
+});
+document.addEventListener('change', function (e) {
+  var t = e.target; if (!t || (t.id !== 'in-camara' && t.id !== 'in-galeria')) { return; }
+  var f = t.files && t.files[0]; t.value = '';
+  if (!f) { return; }
+  leerFoto(f).then(function (url) { S.borrador.foto = url; guardar(); renderFotoCargar(); }).catch(function () { aviso('No se pudo leer la foto. Prueba con otra.'); });
+});
+S = cargar();
+mostrar(S.pantalla === 'guia' ? 'bienvenida' : S.pantalla);
+</script>
+</body>
+</html>
