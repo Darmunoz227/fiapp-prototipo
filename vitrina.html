@@ -198,6 +198,9 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
 .tallas-lista span.cero { color: #9ca3af; text-decoration: line-through; }
 .titulo-sec { display: flex; justify-content: space-between; align-items: baseline; }
 .item-c .x { inline-size: 34px; block-size: 34px; border-radius: 50%; color: #9ca3af; font-size: 18px; }
+.nota-producto { background: #eef4ff; border: 1px solid #c7d7fb; border-radius: 12px; padding-block: 10px; padding-inline: 12px; font-size: 14px; color: #1f2937; margin-block: 4px 12px; }
+.mision-sec { font-size: 15px; font-weight: 700; color: #4b5563; margin-block: -4px 10px; }
+.mision-plan { font-size: 14px; font-weight: 700; color: var(--verde); background: #eef7f1; border-radius: 10px; padding-block: 8px; padding-inline: 10px; margin-block: 0 12px; }
 </style>
 </head>
 <body>
@@ -216,7 +219,9 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
       <label class="campo"><span>WhatsApp del negocio (sale en tu vitrina)</span><input id="in-tel" type="tel" inputmode="numeric" placeholder="Ej. 3001234567"></label>
       <div class="campo"><span>¿Qué secciones tienes? (toca las que sí)</span><div class="chips" id="bv-secciones"></div>
         <div class="fila-otra"><input id="in-otra" type="text" autocomplete="off" placeholder="Otra sección"><button class="btn sec" data-a="agregar-seccion">Agregar</button></div></div>
-      <div class="campo"><span>¿Cuántas prendas quieres cargar al día?</span><div class="chips" id="bv-meta"></div></div>
+      <p class="nota-producto">💡 <b>Un producto</b> es lo que tiene su propia foto y su propio precio, por ejemplo «Gorra NY negra». Las tallas y cuántas tienes de cada una se ponen adentro.</p>
+      <div class="campo"><span>¿Más o menos cuántos productos distintos tienes?</span><div class="chips" id="bv-estimado"></div></div>
+      <div class="campo"><span>¿Cuántos productos quieres cargar al día?</span><div class="chips" id="bv-meta"></div></div>
       <button class="btn prim grande" data-a="empezar">Empezar</button>
       <button class="btn sec" style="margin-block-start: 10px;" data-a="ejemplo">Ver cómo se ve, con un ejemplo</button>
     </div>
@@ -234,15 +239,16 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
       <button class="btn sec" data-a="ir-vitrina">🖼️ Mi vitrina</button>
       <button class="btn sec" data-a="ir-cierre" id="ini-cierre">🌙 Cerrar el día</button>
     </div>
-    <h2 class="titulo-sec"><span>Mis secciones</span><small class="suave chica">Toca una para la misión de hoy</small></h2>
+    <h2 class="titulo-sec"><span>Mis secciones</span><small class="suave chica">Toca una para empezar por ahí</small></h2>
     <div id="ini-secciones"></div>
-    <p class="centro chica suave"><button class="enlace" data-a="ir-guia">Guía para la visita</button> · <button class="enlace" data-a="reiniciar">Empezar de nuevo</button></p>
+    <p class="centro chica suave"><button class="enlace" data-a="exportar">📤 Pasar mis productos a FiApp</button><br><button class="enlace" data-a="ir-guia">Guía para la visita</button> · <button class="enlace" data-a="reiniciar">Empezar de nuevo</button></p>
   </div>
 </section>
 
 <section id="p-cargar" data-pantalla hidden>
-  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Cargar prenda</span><span class="lado fin"><span class="racha" id="car-progreso">0/5</span></span></header>
+  <header class="cab"><button class="lado" data-a="ir-inicio">‹ Inicio</button><span class="tit">Cargar producto</span><span class="lado fin"><span class="racha" id="car-progreso">0/5</span></span></header>
   <div class="cont">
+    <p class="nota-producto">1 producto = 1 foto y 1 precio. Si lo tienes en varias tallas, ponlas abajo.</p>
     <div id="car-foto"></div>
     <label class="campo"><span>¿Qué es?</span><input id="car-nombre" type="text" autocomplete="off" placeholder="Ej. Camiseta Colombia"></label>
     <div class="campo"><span>Sección</span><div class="chips" id="car-secciones"></div></div>
@@ -252,7 +258,7 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
     <p class="conversion" id="car-margen"></p>
     <div class="campo"><span>Tallas: ¿cuántas tienes de cada una?</span><div class="formato" id="car-presets"></div><div id="car-tallas"></div><p class="chica suave" id="car-total"></p></div>
     <p class="chica suave">¿La tienes en varios colores? Carga cada color con su foto.</p>
-    <div class="pila"><button class="btn prim grande" data-a="guardar-otra">Guardar y cargar otra</button><button class="btn sec" data-a="guardar-prenda">Guardar</button></div>
+    <div class="pila"><button class="btn prim grande" data-a="guardar-otra">Guardar y cargar otro</button><button class="btn sec" data-a="guardar-prenda">Guardar</button></div>
   </div>
 </section>
 
@@ -276,12 +282,20 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
   <header class="cab"><button class="lado" data-a="volver-guia">‹ Volver</button><span class="tit">Guía para la visita</span><span class="lado fin"></span></header>
   <div class="cont guia">
     <div class="tarjeta">
+      <b>Las tres palabras del prototipo</b>
+      <ul>
+        <li><b>Sección:</b> el grupo, por ejemplo Gorras o Camisetas.</li>
+        <li><b>Producto:</b> lo que tiene su propia foto y su propio precio, por ejemplo «Gorra NY negra». Las misiones cuentan productos.</li>
+        <li><b>Unidades:</b> cuántas tiene de cada talla.</li>
+      </ul>
+    </div>
+    <div class="tarjeta">
       <b>Cómo probarlo con Yudith y con Oscar</b>
       <ol>
         <li>Escribe con ellos el nombre del negocio, su WhatsApp y sus secciones. Para Oscar: Gorras y Camisetas.</li>
-        <li>Pásale el celular: «cargue 3 prendas de verdad, con su foto». No le expliques nada. Mira cuánto se demora cada una.</li>
+        <li>Pásale el celular: «cargue 3 productos de verdad, cada uno con su foto y su precio». No le expliques nada. Mira cuánto se demora cada uno.</li>
         <li>Abre Mi vitrina y que la comparta en su estado de WhatsApp, o que te la mande a ti.</li>
-        <li>Que venda una prenda tocando la foto y mire cómo bajan las tallas.</li>
+        <li>Que venda un producto tocando la foto y mire cómo bajan las tallas.</li>
         <li>Cierren el día: ¿entiende la racha, la idea del día y el aviso?</li>
         <li>Al terminar toca «Empezar de nuevo»: borra sus fotos de tu celular.</li>
       </ol>
@@ -289,11 +303,11 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
     <div class="tarjeta">
       <h3 style="margin-block-start: 0;">Preguntas</h3>
       <ul>
-        <li>¿Cuántas referencias tiene más o menos? ¿Maneja tallas y colores? ¿Cada color es otra prenda?</li>
+        <li>¿Cuántas referencias tiene más o menos? ¿Maneja tallas y colores? ¿Cada color es otro producto?</li>
         <li>¿Vende por WhatsApp: estados, catálogo o fotos a clientes? ¿Cuántas veces por semana?</li>
-        <li>¿A qué hora tiene un rato tranquilo para cargar 5 prendas?</li>
-        <li>¿Cómo sabe hoy cuánto le queda de cada prenda y de cada talla?</li>
-        <li>¿Sabe en cuánto compró cada prenda? ¿Le gustaría saber cuánto le gana?</li>
+        <li>¿A qué hora tiene un rato tranquilo para cargar 5 productos?</li>
+        <li>¿Cómo sabe hoy cuánto le queda de cada producto y de cada talla?</li>
+        <li>¿Sabe en cuánto compró cada producto? ¿Le gustaría saber cuánto le gana?</li>
         <li>¿Vende fiado o por separado (abonos)?</li>
         <li>¿Usaría la vitrina en su estado? ¿Qué le cambiaría?</li>
         <li>Oscar: ¿vende en un local o en la calle? ¿El celular nuevo deja instalar la app?</li>
@@ -330,14 +344,14 @@ function textoTallas(p) { var d = tallasDisponibles(p); return d.length === 0 ? 
 function valorMercancia(productos) {
   return productos.reduce(function (s, p) {
     var u = unidadesDe(p); var conCosto = p.costo !== null && p.costo !== undefined;
-    return { prendas: s.prendas + 1, unidades: s.unidades + u, venta: s.venta + p.precio * u, costo: s.costo + (conCosto ? p.costo * u : 0), conCosto: s.conCosto + (conCosto ? u : 0), sinCosto: s.sinCosto + (conCosto ? 0 : u) };
-  }, { prendas: 0, unidades: 0, venta: 0, costo: 0, conCosto: 0, sinCosto: 0 });
+    return { productos: s.productos + 1, unidades: s.unidades + u, venta: s.venta + p.precio * u, costo: s.costo + (conCosto ? p.costo * u : 0), conCosto: s.conCosto + (conCosto ? u : 0), sinCosto: s.sinCosto + (conCosto ? 0 : u) };
+  }, { productos: 0, unidades: 0, venta: 0, costo: 0, conCosto: 0, sinCosto: 0 });
 }
 function progresoMision(productos, hoy, meta) {
   var h = productos.filter(function (p) { return p.creado === hoy; }).length;
   return { hechas: h, meta: meta, cumplida: h >= meta, pct: Math.min(100, Math.round(100 * h / meta)), faltan: Math.max(0, meta - h) };
 }
-function conteoSecciones(productos, secciones) { return secciones.map(function (s) { return { seccion: s, prendas: productos.filter(function (p) { return p.seccion === s; }).length }; }); }
+function conteoSecciones(productos, secciones) { return secciones.map(function (s) { return { seccion: s, productos: productos.filter(function (p) { return p.seccion === s; }).length }; }); }
 function seccionSiguiente(secciones, actual) { var i = secciones.indexOf(actual); return secciones.length === 0 ? '' : secciones[(i + 1) % secciones.length]; }
 function margenTexto(precio, costo) {
   if (!(costo > 0) || !(precio > 0)) { return ''; }
@@ -382,12 +396,12 @@ function leccionVitrina(racha, d) {
     if (d.unidades > 0) {
       return { titulo: 'Tu mercancía es plata', texto: 'Tus ' + d.unidades + ' unidades, vendidas a tu precio, son ' + pesos(d.venta) + '.' + (d.conCosto > 0 ? ' Las que tienen costo anotado te costaron ' + pesos(d.costo) + ': esa es la plata que tienes metida en mercancía.' : ' Si anotas en cuánto las compraste, sabrás cuánta plata tienes metida en mercancía.') };
     }
-    return { titulo: 'Tu mercancía es plata', texto: 'Cada prenda en el almacén es plata que pagaste. Cargarla te dice cuánta plata tienes ahí.' };
+    return { titulo: 'Tu mercancía es plata', texto: 'Cada producto en tu local es plata que pagaste. Cargarlo te dice cuánta plata tienes ahí.' };
   }
-  if (i === 1) { return { titulo: 'Lo que no se vende es plata quieta', texto: 'Una prenda que no se vende en dos meses es plata que no trabaja. Ponla en tu estado, en promoción o al lado de lo que más se vende.' }; }
+  if (i === 1) { return { titulo: 'Lo que no se vende es plata quieta', texto: 'Un producto que no se vende en dos meses es plata que no trabaja. Ponlo en tu estado, en promoción o al lado de lo que más se vende.' }; }
   if (i === 2) {
-    if (d.ejemplo) { return { titulo: 'Cuánto ganas en cada prenda', texto: limpio(d.ejemplo.nombre) + ': te cuesta ' + pesos(d.ejemplo.costo) + ' y la vendes en ' + pesos(d.ejemplo.precio) + '. ' + margenTexto(d.ejemplo.precio, d.ejemplo.costo) }; }
-    return { titulo: 'Cuánto ganas en cada prenda', texto: 'Si una camiseta te cuesta $20.000 y la vendes en $35.000, ganas $15.000 en cada una. De cada $100 que vendes, te quedan $42,86.' };
+    if (d.ejemplo) { return { titulo: 'Cuánto ganas en cada producto', texto: limpio(d.ejemplo.nombre) + ': te cuesta ' + pesos(d.ejemplo.costo) + ' y la vendes en ' + pesos(d.ejemplo.precio) + '. ' + margenTexto(d.ejemplo.precio, d.ejemplo.costo) }; }
+    return { titulo: 'Cuánto ganas en cada producto', texto: 'Si una camiseta te cuesta $20.000 y la vendes en $35.000, ganas $15.000 en cada una. De cada $100 que vendes, te quedan $42,86.' };
   }
   if (i === 3) {
     if (d.tallaTop) { return { titulo: 'La talla que más se vende', texto: 'La talla que más has vendido es la ' + d.tallaTop + '. Cuando vuelvas a surtir, pide más de esa talla.' }; }
@@ -400,6 +414,30 @@ function semanaRacha(iso, racha) {
   var out = [];
   for (var i = 0; i < 7; i++) { var d = new Date(hoy); d.setDate(hoy.getDate() - dow + i); var atras = dow - i; out.push({ letra: DIAS[d.getDay()], hecho: atras >= 0 && atras < racha, hoy: atras === 0 }); }
   return out;
+}
+/* Plan de carga: la meta del dia y cuantos dias faltan para tener todo cargado (la linea de llegada). */
+function planCarga(cargados, estimado, meta) {
+  if (!(estimado > 0) || !(meta > 0)) { return null; }
+  var faltan = Math.max(0, estimado - cargados);
+  return { cargados: cargados, estimado: estimado, faltan: faltan, dias: Math.ceil(faltan / meta) };
+}
+function textoPlan(p, meta) {
+  if (!p) { return ''; }
+  if (p.faltan === 0) { return 'Ya cargaste más o menos todo lo que tienes. ¡Terminaste! Ahora vende y comparte tu vitrina.'; }
+  if (p.cargados === 0) { return 'Tienes unos ' + p.estimado + ' productos: con ' + meta + ' al día terminas en ' + p.dias + (p.dias === 1 ? ' día.' : ' días.'); }
+  return 'Llevas ' + p.cargados + ' de unos ' + p.estimado + '. Te faltan unos ' + p.faltan + (p.dias === 1 ? ': un día más.' : ': unos ' + p.dias + ' días más.');
+}
+/* Archivo para el importador de FiApp (plantilla de la 039/044): una fila por talla con unidades. Sin fotos. */
+function campoCsv(v) { var s = String(v); return /[;"\n\r]/.test(s) ? '"' + s.replace(/"/g, '""') + '"' : s; }
+function csvParaFiApp(productos) {
+  var filas = ['Nombre;Precio;Cantidad_Actual;Costo_Unitario;Stock_Minimo'];
+  productos.slice().reverse().forEach(function (p) {
+    var costo = p.costo > 0 ? p.costo : 0;
+    var conUnidades = p.tallas.filter(function (t) { return t.n > 0; });
+    if (p.tallas.length === 1 || conUnidades.length === 0) { filas.push([campoCsv(limpio(p.nombre)), p.precio, unidadesDe(p), costo, 0].join(';')); return; }
+    conUnidades.forEach(function (t) { filas.push([campoCsv(limpio(p.nombre) + ' (' + t.t + ')'), p.precio, t.n, costo, 0].join(';')); });
+  });
+  return filas.join('\n') + '\n';
 }
 /*LOGICA-FIN*/
 var CLAVE = 'fiapp-prototipo-vitrina-v1';
@@ -417,7 +455,7 @@ function ponerSeccion(seccion) { var b = S.borrador; var p = presetDe(seccion); 
 function inicial() {
   var hoy = isoDe(new Date());
   return {
-    negocio: 'Mi Negocio', tel: '', secciones: ['Camisetas', 'Jeans', 'Vestidos'], meta: 5, seccionHoy: 'Camisetas',
+    negocio: 'Mi Negocio', tel: '', secciones: ['Camisetas', 'Jeans', 'Vestidos'], meta: 5, estimado: null, seccionHoy: 'Camisetas',
     racha: 0, cerroHoy: false, compartidaHoy: false, celebradaHoy: false, hora: '8:00 p. m.',
     productos: [], ventas: [], carrito: [], hoy: hoy, pantalla: 'bienvenida', anterior: 'bienvenida',
     filtroVitrina: '', filtroVender: '', seccionManana: null, borrador: borradorNuevo('Camisetas')
@@ -456,7 +494,8 @@ function renderBienvenida() {
   $('in-negocio').value = S.negocio === 'Mi Negocio' ? '' : S.negocio; $('in-tel').value = S.tel;
   var todas = SECCIONES_BASE.slice(); S.secciones.forEach(function (s) { if (todas.indexOf(s) < 0) { todas.push(s); } });
   $('bv-secciones').innerHTML = todas.map(function (s) { return '<button class="chip' + (S.secciones.indexOf(s) >= 0 ? ' sel' : '') + '" data-sec="' + esc(s) + '">' + emojiDe(s) + ' ' + esc(s) + '</button>'; }).join('');
-  $('bv-meta').innerHTML = [3, 5, 10].map(function (m) { return '<button class="chip' + (S.meta === m ? ' sel' : '') + '" data-meta="' + m + '">' + m + ' prendas</button>'; }).join('');
+  $('bv-estimado').innerHTML = [[15, 'Hasta 20'], [35, '20 a 50'], [75, '50 a 100'], [150, 'Más de 100']].map(function (e) { return '<button class="chip' + (S.estimado === e[0] ? ' sel' : '') + '" data-estimado="' + e[0] + '">' + e[1] + '</button>'; }).join('');
+  $('bv-meta').innerHTML = [3, 5, 10].map(function (m) { return '<button class="chip' + (S.meta === m ? ' sel' : '') + '" data-meta="' + m + '">' + m + ' productos</button>'; }).join('');
 }
 function alternarSeccion(s) {
   var i = S.secciones.indexOf(s);
@@ -470,25 +509,27 @@ function empezar() {
   mostrar('inicio');
 }
 /* Inicio */
+function planHtml() { var t = textoPlan(planCarga(S.productos.length, S.estimado, S.meta), S.meta); return t ? '<div class="mision-plan">🏁 ' + esc(t) + '</div>' : ''; }
 function renderInicio() {
   $('ini-negocio').textContent = S.negocio; $('ini-racha').textContent = '🔥 ' + S.racha;
   var m = progresoMision(S.productos, S.hoy, S.meta);
   if (!m.cumplida) {
     $('ini-mision').innerHTML = '<div class="tarjeta mision"><div class="mision-tit"><span>🎯 MISIÓN DE HOY</span><span>' + m.hechas + ' de ' + m.meta + '</span></div>' +
-      '<b class="mision-texto">' + m.meta + ' prendas de ' + esc(S.seccionHoy) + ' ' + emojiDe(S.seccionHoy) + '</b>' +
+      '<b class="mision-texto">' + m.meta + ' productos hoy</b><div class="mision-sec">Empieza por ' + emojiDe(S.seccionHoy) + ' ' + esc(S.seccionHoy) + '</div>' +
       '<div class="barra"><span style="inline-size: ' + m.pct + '%;"></span></div>' +
-      '<div class="mision-sub">' + (m.hechas === 0 ? 'Unos ' + m.meta + ' minutos. Empieza por la que tengas más a la mano.' : '¡Vas bien! Te faltan ' + m.faltan + (m.faltan === 1 ? ' prenda' : ' prendas') + ', unos ' + m.faltan + ' minutos.') + '</div>' +
-      '<button class="btn prim grande" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+      '<div class="mision-sub">' + (m.hechas === 0 ? 'Una foto y un precio por producto: unos ' + m.meta + ' minutos.' : '¡Vas bien! Te faltan ' + m.faltan + (m.faltan === 1 ? ' producto' : ' productos') + ' hoy.') + '</div>' +
+      planHtml() +
+      '<button class="btn prim grande" data-a="ir-cargar">📷 Cargar un producto</button></div>';
   } else {
     $('ini-mision').innerHTML = '<div class="tarjeta mision"><div class="mision-tit"><span>✅ MISIÓN CUMPLIDA</span><span>' + m.hechas + ' de ' + m.meta + '</span></div>' +
-      '<b class="mision-texto">¡Cargaste ' + m.hechas + ' prendas hoy!</b><div class="barra"><span style="inline-size: 100%;"></span></div>' +
-      '<div class="mision-sub">Tu vitrina está lista para tu estado de WhatsApp.</div>' +
+      '<b class="mision-texto">¡Cargaste ' + m.hechas + ' productos hoy!</b><div class="barra"><span style="inline-size: 100%;"></span></div>' +
+      '<div class="mision-sub">Tu vitrina está lista para tu estado de WhatsApp.</div>' + planHtml() +
       '<div class="pila"><button class="btn verde" data-a="compartir-vitrina">📲 Compartir mi vitrina</button><button class="btn sec" data-a="ir-cargar">Cargar más</button></div></div>';
   }
   var v = valorMercancia(S.productos);
-  $('ini-stats').innerHTML = '<div class="stat"><b>' + v.prendas + '</b><small>prendas</small></div><div class="stat"><b>' + v.unidades + '</b><small>unidades</small></div><div class="stat"><b>' + pesos(v.venta) + '</b><small>en mercancía</small></div>';
+  $('ini-stats').innerHTML = '<div class="stat"><b>' + v.productos + '</b><small>productos</small></div><div class="stat"><b>' + v.unidades + '</b><small>unidades</small></div><div class="stat"><b>' + pesos(v.venta) + '</b><small>en mercancía</small></div>';
   $('ini-secciones').innerHTML = conteoSecciones(S.productos, S.secciones).map(function (c) {
-    return '<button class="seccion-fila" data-sechoy="' + esc(c.seccion) + '"><span class="ico">' + emojiDe(c.seccion) + '</span><span class="mt"><b>' + esc(c.seccion) + '</b><br><small class="suave">' + (c.prendas === 1 ? '1 prenda' : c.prendas + ' prendas') + '</small></span>' + (c.seccion === S.seccionHoy ? '<span class="hoy">MISIÓN DE HOY</span>' : '') + '</button>';
+    return '<button class="seccion-fila" data-sechoy="' + esc(c.seccion) + '"><span class="ico">' + emojiDe(c.seccion) + '</span><span class="mt"><b>' + esc(c.seccion) + '</b><br><small class="suave">' + (c.productos === 1 ? '1 producto' : c.productos + ' productos') + '</small></span>' + (c.seccion === S.seccionHoy ? '<span class="hoy">EMPIEZA AQUÍ</span>' : '') + '</button>';
   }).join('');
   $('ini-cierre').textContent = S.cerroHoy ? '✅ Día cerrado · ver resumen' : '🌙 Cerrar el día';
 }
@@ -496,7 +537,7 @@ function renderInicio() {
 function renderFotoCargar() {
   var b = S.borrador;
   $('car-foto').innerHTML = b.foto ?
-    '<div class="foto-prev"><img src="' + b.foto + '" alt="Foto de la prenda"><div class="foto-acc"><label class="btn gris" for="in-camara">📷 Otra foto</label><label class="btn gris" for="in-galeria">🖼️ De la galería</label></div></div>' :
+    '<div class="foto-prev"><img src="' + b.foto + '" alt="Foto del producto"><div class="foto-acc"><label class="btn gris" for="in-camara">📷 Otra foto</label><label class="btn gris" for="in-galeria">🖼️ De la galería</label></div></div>' :
     '<div class="foto-vacia"><div class="foto-ico">📷</div><label class="btn prim" for="in-camara">Tomar foto</label><label class="btn sec" for="in-galeria">Elegir de la galería</label></div>';
 }
 function renderTallasCargar() {
@@ -549,12 +590,12 @@ function guardarPrenda(otra) {
   if (!antes && m.cumplida && !S.celebradaHoy) {
     S.celebradaHoy = true; guardar(); renderCargar(); hojaCelebracion(); return;
   }
-  aviso((sinEspacio ? 'Guardada sin foto: el celular no tiene más espacio en esta prueba. ' : 'Guardada: ' + nombre + ' · ') + m.hechas + ' de ' + m.meta + ' hoy');
+  aviso((sinEspacio ? 'Guardado sin foto: el celular no tiene más espacio en esta prueba. ' : 'Guardado: ' + nombre + ' · ') + m.hechas + ' de ' + m.meta + ' hoy');
   if (otra) { renderCargar(); window.scrollTo(0, 0); } else { mostrar('inicio'); }
 }
 function hojaCelebracion() {
   var v = valorMercancia(S.productos);
-  abrirHoja('<div class="fiesta">🎉</div><h3>¡Misión cumplida!</h3><p class="centro">Cargaste ' + S.meta + ' prendas hoy. Ya tienes <b>' + v.prendas + ' prendas</b> en tu vitrina: <b>' + pesos(v.venta) + '</b> en mercancía.</p>' +
+  abrirHoja('<div class="fiesta">🎉</div><h3>¡Misión cumplida!</h3><p class="centro">Cargaste ' + S.meta + ' productos hoy. Ya tienes <b>' + v.productos + ' productos</b> (' + v.unidades + ' unidades) en tu vitrina: <b>' + pesos(v.venta) + '</b> en mercancía.</p>' + planHtml() +
     '<div class="pila"><button class="btn verde" data-a="ir-vitrina">Ver mi vitrina</button><button class="btn gris" data-a="seguir-cargando">Seguir cargando</button></div>');
 }
 /* Vitrina */
@@ -570,11 +611,11 @@ function tarjetaPrenda(p, attr) {
 }
 function renderVitrina() {
   if (S.productos.length === 0) {
-    $('vit-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🖼️</div><p>Todavía no hay prendas en tu vitrina.<br>Carga la primera con una foto.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+    $('vit-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🖼️</div><p>Todavía no hay productos en tu vitrina.<br>Carga el primero con una foto.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar un producto</button></div>';
     return;
   }
   var v = valorMercancia(S.productos);
-  $('vit-cont').innerHTML = '<div class="tarjeta"><b>' + v.prendas + ' prendas · ' + v.unidades + ' unidades</b><p class="chica suave" style="margin-block: 4px 10px;">Vendidas a tu precio son ' + pesos(v.venta) + '.</p>' +
+  $('vit-cont').innerHTML = '<div class="tarjeta"><b>' + v.productos + ' productos · ' + v.unidades + ' unidades</b><p class="chica suave" style="margin-block: 4px 10px;">Vendidas a tu precio son ' + pesos(v.venta) + '.</p>' +
     '<div class="pila"><button class="btn verde" data-a="compartir-vitrina">📲 Compartir en mi estado</button><button class="btn sec" data-a="lista-cliente">💬 Enviar la lista a un cliente</button></div></div>' +
     chipsFiltro('filtrovit', S.filtroVitrina) + '<div class="grilla">' + filtrar(S.productos, S.filtroVitrina).map(function (p) { return tarjetaPrenda(p, 'prenda'); }).join('') + '</div>';
 }
@@ -585,7 +626,7 @@ function hojaPrenda(id) {
   abrirHoja((p.foto ? '<img class="hoja-foto" src="' + p.foto + '" alt="' + esc(p.nombre) + '">' : '<div class="hoja-emoji">' + emojiDe(p.seccion) + '</div>') +
     '<h3>' + esc(p.nombre) + '</h3><span class="grande">' + pesos(p.precio) + '</span><div class="tallas-lista">' + tallas + '</div>' +
     (p.costo ? '<p class="chica verde-t" style="margin-block: 0 10px;">' + esc(margenTexto(p.precio, p.costo)) + '</p>' : '<p class="chica suave" style="margin-block: 0 10px;">Sin costo anotado: no sabemos cuánto le ganas.</p>') +
-    '<div class="pila">' + (u > 0 ? '<button class="btn verde" data-compartirp="' + p.id + '">📲 Compartir esta prenda</button><button class="btn sec" data-venderdesde="' + p.id + '">🛍️ Vender</button>' : '<p class="centro rojo-t">Agotada</p>') +
+    '<div class="pila">' + (u > 0 ? '<button class="btn verde" data-compartirp="' + p.id + '">📲 Compartir este producto</button><button class="btn sec" data-venderdesde="' + p.id + '">🛍️ Vender</button>' : '<p class="centro rojo-t">Agotada</p>') +
     '<button class="btn gris" data-a="cerrar-hoja">Cerrar</button></div>');
 }
 /* Imagenes para compartir */
@@ -671,13 +712,13 @@ function totalCarrito() { return S.carrito.reduce(function (s, c) { var p = prod
 function renderCarrito() {
   var b = $('ven-carrito'); var n = S.carrito.length;
   b.hidden = n === 0; $('ven-cont').className = 'cont' + (n > 0 ? ' con-carrito' : '');
-  b.innerHTML = n === 0 ? '' : '<span>🛒 ' + (n === 1 ? '1 prenda' : n + ' prendas') + ' · ' + pesos(totalCarrito()) + '</span><button class="btn verde" data-a="cobrar-vitrina">Cobrar</button>';
+  b.innerHTML = n === 0 ? '' : '<span>🛒 ' + (n === 1 ? '1 unidad' : n + ' unidades') + ' · ' + pesos(totalCarrito()) + '</span><button class="btn verde" data-a="cobrar-vitrina">Cobrar</button>';
 }
 function renderVender() {
   if (S.productos.length === 0) {
-    $('ven-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🛍️</div><p>Para vender tocando la foto, primero carga tus prendas.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar una prenda</button></div>';
+    $('ven-cont').innerHTML = '<div class="vacio"><div class="grande-ico">🛍️</div><p>Para vender tocando la foto, primero carga tus productos.</p><button class="btn prim" data-a="ir-cargar">📷 Cargar un producto</button></div>';
   } else {
-    $('ven-cont').innerHTML = '<p class="chica suave" style="margin-block: 0 8px;">Toca la prenda que te compraron y escoge la talla.</p>' + chipsFiltro('filtroven', S.filtroVender) +
+    $('ven-cont').innerHTML = '<p class="chica suave" style="margin-block: 0 8px;">Toca el producto que te compraron y escoge la talla.</p>' + chipsFiltro('filtroven', S.filtroVender) +
       '<div class="grilla">' + filtrar(S.productos, S.filtroVender).map(function (p) { return tarjetaPrenda(p, 'vender'); }).join('') + '</div>';
   }
   renderCarrito();
@@ -685,7 +726,7 @@ function renderVender() {
 function hojaTallas(id) {
   var p = productoPor(id); if (!p) { return; }
   var disp = p.tallas.filter(function (t) { return t.n - enCarrito(p.id, t.t) > 0; });
-  if (disp.length === 0) { aviso(unidadesDe(p) === 0 ? 'Esa prenda está agotada' : 'Ya tienes en el carrito todas las que quedan'); return; }
+  if (disp.length === 0) { aviso(unidadesDe(p) === 0 ? 'Ese producto está agotado' : 'Ya tienes en el carrito todas las que quedan'); return; }
   abrirHoja('<h3>' + esc(p.nombre) + '</h3><p class="centro suave" style="margin-block: 2px 0;">' + pesos(p.precio) + ' · ¿Qué talla?</p><div class="tallas-venta">' +
     disp.map(function (t) { var q = t.n - enCarrito(p.id, t.t); return '<button class="talla-btn" data-addtalla="' + p.id + '|' + esc(t.t) + '"><b>' + esc(t.t) + '</b><small>' + (q === 1 ? 'queda 1' : 'quedan ' + q) + '</small></button>'; }).join('') +
     '</div><button class="btn gris" data-a="cerrar-hoja">Cancelar</button>');
@@ -734,11 +775,11 @@ function renderCierre() {
       '<div class="fila-dato"><span>🛍️ Ventas (' + r.n + ')</span><b>' + pesos(r.total) + '</b></div>' +
       '<div class="fila-dato"><span>💵 En efectivo</span><b>' + pesos(r.efectivo) + '</b></div>' +
       '<div class="fila-dato"><span>📱 Nequi o transferencia</span><b>' + pesos(r.digital) + '</b></div>' +
-      '<div class="fila-dato"><span>👕 Prendas vendidas</span><b>' + r.unidades + '</b></div>' +
+      '<div class="fila-dato"><span>👕 Unidades vendidas</span><b>' + r.unidades + '</b></div>' +
       '<div class="fila-dato"><span>Ganancia bruta<br><small class="suave">de las que tienen costo, antes de gastos</small></span><b class="verde-t">' + pesos(r.exacta) + '</b></div>' +
-      (r.sinCosto > 0 ? '<p class="chica suave" style="margin-block: 6px 0;">' + (r.sinCosto === 1 ? '1 prenda vendida no tiene' : r.sinCosto + ' prendas vendidas no tienen') + ' costo anotado. Anota en cuánto las compraste para saber cuánto ganas.</p>' : '') +
+      (r.sinCosto > 0 ? '<p class="chica suave" style="margin-block: 6px 0;">' + (r.sinCosto === 1 ? '1 unidad vendida no tiene' : r.sinCosto + ' unidades vendidas no tienen') + ' costo anotado. Anota en cuánto las compraste para saber cuánto ganas.</p>' : '') +
       '<details class="que"><summary>¿Qué es la ganancia bruta?</summary>Es lo que vendiste menos lo que te costó lo que vendiste. Todavía no le has restado el arriendo, la luz ni tu sueldo: lo que queda después de eso es la utilidad.</details></div>' +
-      '<div class="tarjeta"><div class="fila-dato"><span>📷 Prendas cargadas hoy</span><b>' + m.hechas + ' de ' + m.meta + '</b></div><div class="fila-dato total"><span>📲 Vitrina compartida hoy</span><b>' + (S.compartidaHoy ? 'Sí' : 'Todavía no') + '</b></div></div>' +
+      '<div class="tarjeta"><div class="fila-dato"><span>📷 Productos cargados hoy</span><b>' + m.hechas + ' de ' + m.meta + '</b></div><div class="fila-dato total"><span>📲 Vitrina compartida hoy</span><b>' + (S.compartidaHoy ? 'Sí' : 'Todavía no') + '</b></div></div>' +
       '<button class="btn prim grande" data-a="cerrar-dia">Cerrar el día</button><p class="centro chica suave">Llevas ' + S.racha + (S.racha === 1 ? ' día seguido.' : ' días seguidos.') + '</p>';
     return;
   }
@@ -748,7 +789,7 @@ function renderCierre() {
   $('cierre-cont').innerHTML = '<div class="tarjeta centro"><div class="fuego">🔥</div><b style="font-size: 22px;">¡' + S.racha + (S.racha === 1 ? ' día! Empezaste tu racha.' : ' días seguidos!') + '</b><div class="semana">' + sem + '</div><p class="chica suave" style="margin: 0;">Un día libre a la semana no rompe tu racha.</p></div>' +
     leccionHtml() +
     '<div class="tarjeta"><b>¿A qué hora te recuerdo tu misión?</b><div class="horas">' + horas + '</div>' +
-    '<div class="bloqueo"><div class="reloj">' + esc(S.hora.replace(' p. m.', '')) + '</div><div class="notif"><span class="logo">F</span><span><b>FiApp · ahora</b><p>Llevas ' + S.racha + (S.racha === 1 ? ' día' : ' días') + ' seguidos 🔥 Mañana toca ' + esc(manana) + ': ' + S.meta + ' prendas y tu vitrina queda lista.</p></span></div></div>' +
+    '<div class="bloqueo"><div class="reloj">' + esc(S.hora.replace(' p. m.', '')) + '</div><div class="notif"><span class="logo">F</span><span><b>FiApp · ahora</b><p>Llevas ' + S.racha + (S.racha === 1 ? ' día' : ' días') + ' seguidos 🔥 Mañana: ' + S.meta + ' productos más, empezando por ' + esc(manana) + '.</p></span></div></div>' +
     '<p class="chica suave" style="margin-block: 8px 0;">Un solo aviso al día. Si no lo usas tres días seguidos, te aviso solo una vez por semana.</p></div>' +
     '<button class="btn gris" data-a="ir-inicio">Volver al Inicio</button>';
 }
@@ -762,7 +803,7 @@ function cargarEjemplo() {
   var hoy = S.hoy; var neg = limpio($('in-negocio').value); var tel = String($('in-tel').value || '').replace(/\D/g, '');
   var t = function (preset, cant) { return TALLAS[preset].map(function (x, i) { return { t: x, n: cant[i] || 0 }; }); };
   S.negocio = neg || 'Almacén de ejemplo'; S.tel = tel || '3001234567';
-  S.secciones = ['Camisetas', 'Jeans', 'Vestidos', 'Gorras']; S.seccionHoy = 'Camisetas'; S.racha = 3; S.cerroHoy = false; S.compartidaHoy = false; S.celebradaHoy = false;
+  S.secciones = ['Camisetas', 'Jeans', 'Vestidos', 'Gorras']; S.seccionHoy = 'Camisetas'; S.estimado = 35; S.racha = 3; S.cerroHoy = false; S.compartidaHoy = false; S.celebradaHoy = false;
   S.productos = [
     { id: 'e1', nombre: 'Camiseta básica blanca', seccion: 'Camisetas', precio: 25000, costo: 14000, tallas: t('ropa', [0, 2, 4, 3, 0, 0]), foto: fotoEjemplo('👕', '#e5e7eb'), creado: hoy },
     { id: 'e2', nombre: 'Gorra NY negra', seccion: 'Gorras', precio: 35000, costo: 18000, tallas: t('unica', [6]), foto: fotoEjemplo('🧢', '#d1d5db'), creado: hoy },
@@ -776,6 +817,19 @@ function cargarEjemplo() {
   if (!guardar()) { aviso('El celular no tiene espacio para el ejemplo'); }
   mostrar('inicio');
 }
+function elegirEstimado(v) { S.estimado = v > 0 ? v : null; guardar(); renderBienvenida(); }
+function exportar() {
+  if (S.productos.length === 0) { aviso('Todavía no hay productos para pasar'); return; }
+  var texto = '\ufeff' + csvParaFiApp(S.productos); var nombre = 'productos-para-fiapp.csv'; var archivo = null;
+  try { archivo = new File([texto], nombre, { type: 'text/csv' }); } catch (e) { archivo = null; }
+  if (archivo && navigator.share && navigator.canShare && navigator.canShare({ files: [archivo] })) {
+    navigator.share({ files: [archivo], text: 'Mis productos para FiApp' }).catch(function () { return null; });
+    return;
+  }
+  var url = URL.createObjectURL(new Blob([texto], { type: 'text/csv' }));
+  var a = document.createElement('a'); a.href = url; a.download = nombre; document.body.appendChild(a); a.click(); document.body.removeChild(a);
+  aviso('Se descargó ' + nombre);
+}
 /* Acciones */
 function accion(a) {
   if (a === 'empezar') { empezar(); }
@@ -788,13 +842,14 @@ function accion(a) {
   else if (a === 'ir-cierre') { mostrar('cierre'); }
   else if (a === 'ir-guia') { S.anterior = S.pantalla; mostrar('guia'); }
   else if (a === 'volver-guia') { mostrar(S.anterior && S.anterior !== 'guia' ? S.anterior : 'bienvenida'); }
-  else if (a === 'reiniciar') { abrirHoja('<h3>¿Empezar de nuevo?</h3><p class="centro suave">Se borran las prendas, las fotos y las ventas de prueba de este celular.</p><div class="pila"><button class="btn rojo" data-a="reiniciar-si">Sí, empezar de nuevo</button><button class="btn gris" data-a="cerrar-hoja">Cancelar</button></div>'); }
+  else if (a === 'exportar') { exportar(); }
+  else if (a === 'reiniciar') { abrirHoja('<h3>¿Empezar de nuevo?</h3><p class="centro suave">Se borran los productos, las fotos y las ventas de prueba de este celular.</p><div class="pila"><button class="btn rojo" data-a="reiniciar-si">Sí, empezar de nuevo</button><button class="btn gris" data-a="cerrar-hoja">Cancelar</button></div>'); }
   else if (a === 'reiniciar-si') { try { localStorage.removeItem(CLAVE); } catch (e) { S = null; } S = inicial(); cerrarHoja(); mostrar('bienvenida'); }
   else if (a === 'cerrar-hoja') { cerrarHoja(); }
   else if (a === 'guardar-otra') { guardarPrenda(true); }
   else if (a === 'guardar-prenda') { guardarPrenda(false); }
   else if (a === 'seguir-cargando') { cerrarHoja(); mostrar('cargar'); }
-  else if (a === 'compartir-vitrina') { if (S.productos.filter(function (p) { return unidadesDe(p) > 0; }).length === 0) { aviso('Carga primero una prenda con unidades'); return; } prepararImagen(dibujarVitrina(S.productos), 'mi-vitrina.png'); }
+  else if (a === 'compartir-vitrina') { if (S.productos.filter(function (p) { return unidadesDe(p) > 0; }).length === 0) { aviso('Carga primero un producto con unidades'); return; } prepararImagen(dibujarVitrina(S.productos), 'mi-vitrina.png'); }
   else if (a === 'compartir-ahora') { compartirAhora(); }
   else if (a === 'guardar-imagen') { guardarImagen(); }
   else if (a === 'lista-cliente') { S.compartidaHoy = true; guardar(); abrirWhatsApp(textoListaCliente(S.negocio, S.productos), ''); }
@@ -804,12 +859,13 @@ function accion(a) {
   else if (a === 'cerrar-dia') { if (!S.cerroHoy) { S.cerroHoy = true; S.racha += 1; S.seccionManana = seccionSiguiente(S.secciones, S.seccionHoy); guardar(); } renderCierre(); window.scrollTo(0, 0); }
 }
 document.addEventListener('click', function (e) {
-  var el = e.target.closest('[data-a],[data-sec],[data-meta],[data-sechoy],[data-carsec],[data-preset],[data-menos],[data-mas],[data-prenda],[data-vender],[data-addtalla],[data-quitarc],[data-filtrovit],[data-filtroven],[data-h],[data-compartirp],[data-venderdesde]');
+  var el = e.target.closest('[data-a],[data-sec],[data-estimado],[data-meta],[data-sechoy],[data-carsec],[data-preset],[data-menos],[data-mas],[data-prenda],[data-vender],[data-addtalla],[data-quitarc],[data-filtrovit],[data-filtroven],[data-h],[data-compartirp],[data-venderdesde]');
   if (!el) { return; }
   var g = function (n) { return el.getAttribute(n); };
   if (el.hasAttribute('data-sec')) { alternarSeccion(g('data-sec')); }
+  else if (el.hasAttribute('data-estimado')) { elegirEstimado(parseInt(g('data-estimado'), 10)); }
   else if (el.hasAttribute('data-meta')) { S.meta = parseInt(g('data-meta'), 10); guardar(); renderBienvenida(); }
-  else if (el.hasAttribute('data-sechoy')) { S.seccionHoy = g('data-sechoy'); ponerSeccion(S.seccionHoy); guardar(); renderInicio(); aviso('Misión de hoy: ' + S.seccionHoy); }
+  else if (el.hasAttribute('data-sechoy')) { S.seccionHoy = g('data-sechoy'); ponerSeccion(S.seccionHoy); guardar(); renderInicio(); aviso('Hoy empiezas por ' + S.seccionHoy); }
   else if (el.hasAttribute('data-carsec')) { ponerSeccion(g('data-carsec')); guardar(); renderCargar(); }
   else if (el.hasAttribute('data-preset')) { S.borrador.preset = g('data-preset'); S.borrador.tallas = {}; guardar(); renderTallasCargar(); }
   else if (el.hasAttribute('data-mas')) { var t1 = g('data-mas'); S.borrador.tallas[t1] = (S.borrador.tallas[t1] || 0) + 1; guardar(); renderTallasCargar(); }
