@@ -134,6 +134,10 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
 .leccion b { display: block; font-size: 17px; margin-block: 4px; }
 .leccion p { margin: 0; }
 .desglose { font-size: 13px; color: #6b7280; text-align: end; }
+.rapido.editar { background: #eef0f3; color: #374151; border-color: #d1d5db; }
+.item-r { display: flex; align-items: center; gap: 10px; padding-block: 8px; border-block-end: 1px solid #eef0f3; }
+.item-r .mt { flex: 1 1 auto; }
+.item-r .x { inline-size: 34px; block-size: 34px; border-radius: 50%; color: #9ca3af; font-size: 18px; }
 </style>
 </head>
 <body>
@@ -227,6 +231,10 @@ details.que summary { color: var(--primario-o); font-weight: 700; cursor: pointe
         <li>Cuando dice «le gano el 40%», ¿es que le sube 40% a lo que le cuesta, o que de cada $100 que vende le quedan $40?</li>
         <li>¿Sabe cuánto paga al mes de arriendo, luz, gas y empleados? ¿Le serviría ver si el negocio gana o pierde en el mes?</li>
         <li>¿Le sirve la idea del día que sale al cerrar? ¿La entiende sin que se la expliquen?</li>
+        <li>¿Le encargan tortas o pedidos con anticipo? ¿Le separan productos con abonos? ¿Cómo lo anota?</li>
+        <li>¿Le pagan con tarjeta, con Nequi o en efectivo? ¿Más o menos qué parte de cada uno?</li>
+        <li>¿Qué precios cobra más? Agrégalos con «✏️ Mis precios».</li>
+        <li>¿Publica en su estado el pan del día o alguna promoción?</li>
         <li>Pídele fotos de 3 a 5 facturas de proveedores.</li>
       </ul>
       <h3>Tienda de peces</h3>
@@ -295,20 +303,23 @@ function mensajeCuenta(negocio, cliente) {
 function resumenDia(negocio, iso, dia, mr, mp, racha) {
   var ef = dia.ventas.filter(function (v) { return v.pago === 'efectivo'; });
   var dg = dia.ventas.filter(function (v) { return v.pago === 'digital'; });
+  var tj = dia.ventas.filter(function (v) { return v.pago === 'tarjeta'; });
   var suma = function (l) { return l.reduce(function (s, v) { return s + v.total; }, 0); };
   var todas = [];
   dia.ventas.concat(dia.fiados).forEach(function (v) { todas = todas.concat(v.lineas || []); });
   var g = gananciaDe(todas, mr, mp);
-  var vendido = suma(ef) + suma(dg) + suma(dia.fiados);
+  var vendido = suma(ef) + suma(dg) + suma(tj) + suma(dia.fiados);
   var exacta = Math.round(g.exacta); var estimada = Math.round(g.estimada); var bruta = Math.round(g.exacta + g.estimada);
   return {
-    efectivo: suma(ef), nEfectivo: ef.length, digital: suma(dg), nDigital: dg.length, fiados: suma(dia.fiados), nFiados: dia.fiados.length,
+    efectivo: suma(ef), nEfectivo: ef.length, digital: suma(dg), nDigital: dg.length, tarjeta: suma(tj), nTarjeta: tj.length, fiados: suma(dia.fiados), nFiados: dia.fiados.length,
     abonos: suma(dia.abonos), vendido: vendido, exacta: exacta, estimada: estimada, bruta: bruta,
     texto: '📊 Cierre del día · ' + limpio(negocio) + ' · ' + fechaCorta(iso) + '\n' +
       'Ventas en efectivo: ' + pesos(suma(ef)) + ' (' + ef.length + ')\n' +
       'Ventas por Nequi o transferencia: ' + pesos(suma(dg)) + ' (' + dg.length + ')\n' +
+      'Ventas con tarjeta: ' + pesos(suma(tj)) + ' (' + tj.length + ')\n' +
       'Fiados: ' + pesos(suma(dia.fiados)) + ' (' + dia.fiados.length + ')\n' +
       'Total vendido: ' + pesos(vendido) + '\n' +
+      'Abonos de fiados recibidos: ' + pesos(suma(dia.abonos)) + '\n' +
       'Ganancia bruta aproximada (antes de gastos): ' + pesos(bruta) + '\n' +
       '🔥 ' + racha + (racha === 1 ? ' día' : ' días') + ' seguidos cerrando el día'
   };
@@ -421,7 +432,7 @@ function renderSumadora() {
   var conProd = mp() !== null; if (!conProd) { S.tipo = 'reventa'; }
   $('sum-tipo').hidden = !conProd;
   var bt = $('sum-tipo').querySelectorAll('[data-tipo]'); for (var k = 0; k < bt.length; k++) { bt[k].className = bt[k].getAttribute('data-tipo') === S.tipo ? 'sel' : ''; }
-  $('sum-rapidos').innerHTML = S.rapidos.map(function (v, i) { return '<button class="rapido" data-r="' + i + '">' + (v.etq ? v.etq + ' ' : '') + pesos(v.valor) + '</button>'; }).join('');
+  $('sum-rapidos').innerHTML = S.rapidos.map(function (v, i) { return '<button class="rapido" data-r="' + i + '">' + (v.etq ? v.etq + ' ' : '') + pesos(v.valor) + '</button>'; }).join('') + '<button class="rapido editar" data-a="editar-rapidos">✏️ Mis precios</button>';
 }
 function agregarPendiente() {
   var v = parseInt(S.actual || '0', 10);
@@ -448,6 +459,7 @@ function hojaPago() {
   abrirHoja('<h3>Cobrar</h3><span class="grande">' + pesos(total) + '</span>' +
     '<button class="pago" data-a="pago-efectivo"><span class="ico">💵</span><span>Efectivo<small>Entra a la caja</small></span></button>' +
     '<button class="pago" data-a="pago-digital"><span class="ico">📱</span><span>Nequi, Daviplata o transferencia<small>No entra a la gaveta</small></span></button>' +
+    '<button class="pago" data-a="pago-tarjeta"><span class="ico">💳</span><span>Tarjeta débito o crédito<small>No entra a la gaveta</small></span></button>' +
     '<button class="pago" data-a="pago-fiado"><span class="ico">📒</span><span>Fiado<small>Se anota en la cuenta del cliente</small></span></button>' +
     '<button class="btn gris" data-a="cerrar-hoja">Volver</button>');
 }
@@ -468,7 +480,7 @@ function registrarVenta(pago) {
   var total = totalCinta(S.cinta);
   S.dia.ventas.push({ pago: pago, total: total, lineas: S.cinta.slice() });
   S.cinta = []; S.actual = ''; S.cant = 0; cerrarHoja(); renderSumadora();
-  aviso(pago === 'efectivo' ? 'Venta de ' + pesos(total) + ' guardada · entró a la caja' : 'Venta de ' + pesos(total) + ' guardada · plata digital, no entra a la gaveta');
+  aviso('Venta de ' + pesos(total) + ' guardada · ' + (pago === 'efectivo' ? 'entró a la caja' : pago === 'tarjeta' ? 'con tarjeta, no entra a la gaveta' : 'plata digital, no entra a la gaveta'));
 }
 function filasClientes(filtro) {
   var f = filtro ? filtro.normalize('NFD').replace(/[\u0300-\u036f]/g, '').toLowerCase() : '';
@@ -533,6 +545,7 @@ function renderCierre() {
     $('cierre-cont').innerHTML = '<div class="tarjeta"><b>Hoy, ' + fechaCorta(S.hoy) + '</b>' +
       '<div class="fila-dato"><span>💵 Ventas en efectivo (' + r.nEfectivo + ')</span><b>' + pesos(r.efectivo) + '</b></div>' +
       '<div class="fila-dato"><span>📱 Nequi o transferencia (' + r.nDigital + ')</span><b>' + pesos(r.digital) + '</b></div>' +
+      '<div class="fila-dato"><span>💳 Tarjeta (' + r.nTarjeta + ')</span><b>' + pesos(r.tarjeta) + '</b></div>' +
       '<div class="fila-dato"><span>📒 Fiados (' + r.nFiados + ')</span><b>' + pesos(r.fiados) + '</b></div>' +
       '<div class="fila-dato"><span>🤝 Abonos recibidos</span><b>' + pesos(r.abonos) + '</b></div>' +
       '<div class="fila-dato total"><span>Total vendido</span><b>' + pesos(r.vendido) + '</b></div>' +
@@ -555,6 +568,19 @@ function renderCierre() {
     '<button class="btn gris" data-a="ir-inicio">Volver al Inicio</button>';
 }
 function leccionHtml(r) { var l = leccionDelDia(S.racha, r); return '<div class="tarjeta leccion"><span class="tag">💡 IDEA DEL DÍA</span><b>' + esc(l.titulo) + '</b><p>' + esc(l.texto) + '</p></div>'; }
+function hojaRapidos() {
+  var filas = S.rapidos.map(function (v, i) { return '<div class="item-r"><span class="mt">' + (v.etq ? esc(v.etq) + ' ' : '') + '<b>' + pesos(v.valor) + '</b></span><button class="x" data-quitarr="' + i + '" aria-label="Quitar">✕</button></div>'; }).join('');
+  abrirHoja('<h3>Mis precios rápidos</h3><p class="centro suave chica" style="margin-block: 2px 8px;">Los que más cobras: un toque y quedan en la cuenta.</p>' + (filas || '<p class="centro suave">Todavía no hay precios rápidos.</p>') +
+    '<label class="campo" style="margin-block-start: 12px;"><span>Valor</span><input id="nr-valor" type="number" inputmode="numeric" min="1" placeholder="Ej. 6000"></label>' +
+    '<label class="campo"><span>Nombre (opcional)</span><input id="nr-nombre" type="text" autocomplete="off" placeholder="Ej. Pez monja"></label>' +
+    '<div class="pila"><button class="btn prim" data-a="agregar-rapido">Agregar precio</button><button class="btn gris" data-a="cerrar-hoja">Listo</button></div>');
+}
+function agregarRapido(valor, nombre) {
+  var v = parseInt(valor, 10); var n = limpio(nombre || '');
+  if (!(v > 0)) { aviso('Escribe el valor'); return false; }
+  if (S.rapidos.length >= 12) { aviso('Máximo 12 precios rápidos: quita uno primero'); return false; }
+  S.rapidos.push({ etq: n, nombre: n || null, valor: v, tipo: S.tipo }); guardar(); return true;
+}
 function rapido(i) { var rp = S.rapidos[i]; if (!rp) { return; } S.cinta.push({ cant: S.cant > 1 ? S.cant : 1, valor: rp.valor, tipo: rp.tipo || S.tipo, nombre: rp.nombre || null, costo: rp.costo !== undefined ? rp.costo : null }); S.actual = ''; S.cant = 0; guardar(); renderSumadora(); }
 function elegirTipo(t) { S.tipo = t === 'produccion' ? 'produccion' : 'reventa'; guardar(); renderSumadora(); }
 function accion(a, el) {
@@ -574,6 +600,9 @@ function accion(a, el) {
   else if (a === 'cerrar-hoja') { cerrarHoja(); if (S.pantalla === 'inicio') { renderInicio(); } }
   else if (a === 'pago-efectivo') { hojaEfectivo(0); }
   else if (a === 'pago-digital') { registrarVenta('digital'); }
+  else if (a === 'pago-tarjeta') { registrarVenta('tarjeta'); }
+  else if (a === 'editar-rapidos') { hojaRapidos(); }
+  else if (a === 'agregar-rapido') { if (agregarRapido($('nr-valor').value, $('nr-nombre').value)) { hojaRapidos(); renderSumadora(); } }
   else if (a === 'guardar-efectivo') { registrarVenta('efectivo'); }
   else if (a === 'pago-fiado') { hojaClientes(); }
   else if (a === 'nuevo-cliente') { hojaNuevoCliente(); }
@@ -600,9 +629,10 @@ function accion(a, el) {
   else if (a === 'wa-resumen') { abrirWhatsApp(resumenDia(S.negocio, S.hoy, S.dia, mr(), mp(), S.racha).texto, ''); }
 }
 document.addEventListener('click', function (e) {
-  var el = e.target.closest('[data-a],[data-t],[data-r],[data-cli],[data-b],[data-h],[data-f],[data-quitar],[data-ver],[data-tipo]');
+  var el = e.target.closest('[data-a],[data-t],[data-r],[data-quitarr],[data-cli],[data-b],[data-h],[data-f],[data-quitar],[data-ver],[data-tipo]');
   if (!el) { return; }
   if (el.hasAttribute('data-t')) { tecla(el.getAttribute('data-t')); }
+  else if (el.hasAttribute('data-quitarr')) { S.rapidos.splice(parseInt(el.getAttribute('data-quitarr'), 10), 1); guardar(); hojaRapidos(); renderSumadora(); }
   else if (el.hasAttribute('data-r')) { rapido(parseInt(el.getAttribute('data-r'), 10)); }
   else if (el.hasAttribute('data-tipo')) { elegirTipo(el.getAttribute('data-tipo')); }
   else if (el.hasAttribute('data-quitar')) { S.cinta.splice(parseInt(el.getAttribute('data-quitar'), 10), 1); guardar(); renderSumadora(); }
